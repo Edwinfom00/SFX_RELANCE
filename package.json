@@ -1,0 +1,24 @@
+{
+  "name": "relance-client",
+  "version": "1.0.0",
+  "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "sharp",
+      "unrs-resolver",
+      "esbuild"
+    ]
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:server": "pnpm --filter server dev",
+    "build:web": "pnpm --filter web build",
+    "build:server": "pnpm --filter server build"
+  },
+  "dependencies": {
+    "nodemailer": "^6.10.1"
+  }
+}
