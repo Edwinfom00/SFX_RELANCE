@@ -114,7 +114,7 @@ export function WorkerScheduleForm({ config }: WorkerScheduleFormProps) {
                   key={d}
                   type="button"
                   onClick={() => toggleDay(d)}
-                  className="w-[30px] h-[30px] rounded-[7px] flex items-center justify-center text-[12px] font-semibold cursor-pointer transition-all"
+                  className="w-7.5 h-7.5 rounded-[7px] flex items-center justify-center text-[12px] font-semibold cursor-pointer transition-all"
                   style={{
                     background: active ? "#0057ff" : "#fff",
                     color: active ? "#fff" : "#697386",
@@ -164,12 +164,12 @@ function SettingRow({
 }) {
   return (
     <div
-      className="grid py-[18px] border-b border-[#e6ebf1]"
+      className="grid py-4.5 border-b border-[#e6ebf1]"
       style={{ gridTemplateColumns: "280px 1fr", gap: 32, alignItems: compact ? "center" : "flex-start" }}
     >
       <div>
         <div className="text-[13.5px] font-semibold text-[#0a2540] tracking-[-0.005em]">{label}</div>
-        {hint && <div className="text-[12px] text-[#697386] mt-1 leading-[1.5]">{hint}</div>}
+        {hint && <div className="text-[12px] text-[#697386] mt-1 leading-normal">{hint}</div>}
       </div>
       <div>{children}</div>
     </div>
@@ -180,7 +180,7 @@ function TimeInput({ value, onChange, timezone }: { value: number; onChange: (v:
   // Afficher juste la ville/région du fuseau (ex: "Africa/Douala" → "Douala")
   const tzShort = timezone.split("/").pop()?.replace(/_/g, " ") ?? timezone;
   return (
-    <div className="inline-flex items-center gap-2 h-[34px] px-3 bg-white border border-[#d8dee6] rounded-[7px] sfx-shadow-sm">
+    <div className="inline-flex items-center gap-2 h-8.5 px-3 bg-white border border-[#d8dee6] rounded-[7px] sfx-shadow-sm">
       <select
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
@@ -190,7 +190,7 @@ function TimeInput({ value, onChange, timezone }: { value: number; onChange: (v:
           <option key={i} value={i}>{String(i).padStart(2, "0")}:00</option>
         ))}
       </select>
-      <span className="text-[11.5px] text-[#697386] bg-[#f6f8fa] px-2 py-1 rounded text-[10.5px]">
+      <span className="text-[11.5px] text-[#697386] bg-[#f6f8fa] px-2 py-1 rounded">
         {tzShort}
       </span>
     </div>
@@ -203,7 +203,7 @@ function NumberInputWithSuffix({
   value: number; onChange: (v: number) => void; suffix: string; min?: number; max?: number;
 }) {
   return (
-    <div className="inline-flex items-center gap-2 h-[34px] px-3 bg-white border border-[#d8dee6] rounded-[7px] sfx-shadow-sm">
+    <div className="inline-flex items-center gap-2 h-8.5 px-3 bg-white border border-[#d8dee6] rounded-[7px] sfx-shadow-sm">
       <input
         type="number"
         value={value}

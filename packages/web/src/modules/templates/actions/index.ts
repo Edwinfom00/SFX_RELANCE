@@ -27,7 +27,7 @@ export async function toggleTemplateActiveAction(id: number, isActive: boolean) 
   revalidatePath("/templates");
 }
 
-/** Stats réelles par template depuis emailLog */
+
 export async function getTemplateStats(templateId: number) {
   const [sent, completed] = await Promise.all([
     prisma.emailLog.count({ where: { templateId, status: "SENT" } }),

@@ -1,5 +1,3 @@
-// SFX UI primitives — fidèles au prototype design system
-
 import { cn } from "@/lib/utils";
 import { type LucideIcon } from "lucide-react";
 import {
@@ -43,7 +41,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-// ─── Transport Badge ───────────────────────────────────────────────────────────
+
 type TransportType = "AIR" | "SEA" | "ROAD";
 
 const transportConfig: Record<TransportType, { label: string; icon: LucideIcon; className: string }> = {
@@ -65,7 +63,7 @@ export function TransportBadge({ type, size = "sm" }: TransportBadgeProps) {
       className={cn(
         "inline-flex items-center gap-1.5 rounded-md font-medium leading-none",
         cfg.className,
-        size === "lg" ? "h-7 px-2.5 text-[13px]" : "h-[22px] px-2 text-[11.5px]"
+        size === "lg" ? "h-7 px-2.5 text-[13px]" : "h-5.5 px-2 text-[11.5px]"
       )}
     >
       <Icon className={size === "lg" ? "h-3.5 w-3.5" : "h-3 w-3"} strokeWidth={2} />
@@ -74,7 +72,7 @@ export function TransportBadge({ type, size = "sm" }: TransportBadgeProps) {
   );
 }
 
-// ─── Pill / Badge ──────────────────────────────────────────────────────────────
+
 type PillTone = "neutral" | "blue" | "green" | "amber" | "red" | "purple";
 
 const pillTones: Record<PillTone, string> = {
@@ -99,7 +97,7 @@ export function Pill({ children, tone = "neutral", size = "sm", className }: Pil
       className={cn(
         "inline-flex items-center gap-1 rounded-full font-medium leading-none whitespace-nowrap",
         pillTones[tone],
-        size === "xs" ? "h-[18px] px-1.5 text-[10.5px]" : "h-[22px] px-2 text-[11.5px]",
+        size === "xs" ? "h-4.5 px-1.5 text-[10.5px]" : "h-5.5 px-2 text-[11.5px]",
         className
       )}
     >
@@ -108,7 +106,7 @@ export function Pill({ children, tone = "neutral", size = "sm", className }: Pil
   );
 }
 
-// ─── Status → Pill mapping ─────────────────────────────────────────────────────
+
 export function QuotationStatusPill({ status }: { status: string }) {
   const map: Record<string, { tone: PillTone; label: string }> = {
     ACTIVE:    { tone: "blue",    label: "Actif" },
@@ -130,7 +128,7 @@ export function EmailStatusPill({ status }: { status: string }) {
   return <Pill tone={cfg.tone}>{cfg.label}</Pill>;
 }
 
-// ─── SFX Button ───────────────────────────────────────────────────────────────
+
 type BtnVariant = "primary" | "secondary" | "ghost" | "danger";
 type BtnSize = "sm" | "md" | "lg";
 
@@ -181,7 +179,7 @@ export function SfxButton({
   );
 }
 
-// ─── SFX Card ─────────────────────────────────────────────────────────────────
+
 interface SfxCardProps {
   children: React.ReactNode;
   className?: string;
@@ -202,7 +200,7 @@ export function SfxCard({ children, className, padding = true }: SfxCardProps) {
   );
 }
 
-// ─── KBD ──────────────────────────────────────────────────────────────────────
+
 export function KBD({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 bg-white border border-[#e6ebf1] border-b-[#d8dee6] border-b-[1.5px] rounded text-[11px] font-medium text-[#697386] font-mono">
@@ -211,7 +209,7 @@ export function KBD({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Avatar ───────────────────────────────────────────────────────────────────
+
 const avatarColors = ["#0057ff", "#0e9f6e", "#c28b00", "#7c4dff", "#e11d74", "#0891b2"];
 
 interface SfxAvatarProps {
@@ -239,7 +237,7 @@ export function SfxAvatar({ name, size = 24 }: SfxAvatarProps) {
   );
 }
 
-// ─── Reminder Steps ───────────────────────────────────────────────────────────
+
 export function ReminderSteps({ current, total = 3 }: { current: number; total?: number }) {
   return (
     <div className="flex items-center gap-0.5">
@@ -260,7 +258,7 @@ export function ReminderSteps({ current, total = 3 }: { current: number; total?:
   );
 }
 
-// ─── Section Header ───────────────────────────────────────────────────────────
+
 interface SectionHeaderProps {
   title: string;
   subtitle?: string;
@@ -279,7 +277,7 @@ export function SectionHeader({ title, subtitle, children }: SectionHeaderProps)
   );
 }
 
-// Re-export icons used across the app
+
 export {
   Plane, Ship, Truck, Send, Clock, TrendingUp, TrendingDown,
   X, Check, ChevronRight, ChevronDown, ChevronLeft,

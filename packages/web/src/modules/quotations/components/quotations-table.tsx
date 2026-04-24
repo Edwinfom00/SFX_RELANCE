@@ -25,7 +25,7 @@ export function QuotationsTable({ quotations }: QuotationsTableProps) {
     <div className="bg-white border border-[#e6ebf1] rounded-xl overflow-hidden sfx-shadow-sm">
       {/* Header */}
       <div
-        className="grid gap-3.5 items-center px-[18px] py-3 border-b border-[#e6ebf1] bg-[#fafbfc]"
+        className="grid gap-3.5 items-center px-4.5 py-3 border-b border-[#e6ebf1] bg-[#fafbfc]"
         style={{ gridTemplateColumns: "26px 110px 1.5fr 90px 140px 80px 140px 100px 32px" }}
       >
         <div className="w-3.5 h-3.5 rounded border-[1.5px] border-[#d8dee6]" />
@@ -45,7 +45,7 @@ export function QuotationsTable({ quotations }: QuotationsTableProps) {
         return (
           <div
             key={q.id}
-            className="grid gap-3.5 items-center px-[18px] py-3.5 hover:bg-[#fafbfc] transition-colors"
+            className="grid gap-3.5 items-center px-4.5 py-3.5 hover:bg-[#fafbfc] transition-colors"
             style={{
               gridTemplateColumns: "26px 110px 1.5fr 90px 140px 80px 140px 100px 32px",
               borderBottom: i < quotations.length - 1 ? "1px solid #e6ebf1" : "none",
@@ -114,8 +114,8 @@ export function QuotationsTable({ quotations }: QuotationsTableProps) {
               {q.status === "ACTIVE" ? (
                 <CancelDialog quotationId={q.id} quotationRef={q.quotationId} />
               ) : (
-                <div className="w-7 h-7 rounded-[6px] flex items-center justify-center text-[#8898aa] cursor-pointer hover:bg-[#f6f8fa]">
-                  <MoreHorizontal className="h-[15px] w-[15px]" />
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[#8898aa] cursor-pointer hover:bg-[#f6f8fa]">
+                  <MoreHorizontal className="h-3.75 w-3.75" />
                 </div>
               )}
             </div>
@@ -124,7 +124,7 @@ export function QuotationsTable({ quotations }: QuotationsTableProps) {
       })}
 
       {/* Footer pagination */}
-      <div className="px-[18px] py-3 border-t border-[#e6ebf1] flex items-center justify-between bg-[#fafbfc] text-[12.5px] text-[#425466]">
+      <div className="px-4.5 py-3 border-t border-[#e6ebf1] flex items-center justify-between bg-[#fafbfc] text-[12.5px] text-[#425466]">
         <div>
           Affichage <b className="text-[#0a2540]">1-{quotations.length}</b> sur{" "}
           <b className="text-[#0a2540]">{quotations.length}</b>

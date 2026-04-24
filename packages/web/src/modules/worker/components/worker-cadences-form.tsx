@@ -76,7 +76,7 @@ export function WorkerCadencesForm({ config }: WorkerCadencesFormProps) {
       <div className="mt-3.5 border border-[#e6ebf1] rounded-xl overflow-hidden bg-white sfx-shadow-sm">
         {/* Header */}
         <div
-          className="grid gap-4 px-[18px] py-3 bg-[#fafbfc] border-b border-[#e6ebf1] text-[11.5px] font-semibold text-[#697386] uppercase tracking-[0.02em]"
+          className="grid gap-4 px-4.5 py-3 bg-[#fafbfc] border-b border-[#e6ebf1] text-[11.5px] font-semibold text-[#697386] uppercase tracking-[0.02em]"
           style={{ gridTemplateColumns: "180px 1fr 1fr 1fr" }}
         >
           <div>Transport</div>
@@ -90,7 +90,7 @@ export function WorkerCadencesForm({ config }: WorkerCadencesFormProps) {
           return (
             <div
               key={row.type}
-              className="grid gap-4 px-[18px] py-3.5 items-center"
+              className="grid gap-4 px-4.5 py-3.5 items-center"
               style={{
                 gridTemplateColumns: "180px 1fr 1fr 1fr",
                 borderBottom: i < TRANSPORT_ROWS.length - 1 ? "1px solid #e6ebf1" : "none",
@@ -117,8 +117,8 @@ export function WorkerCadencesForm({ config }: WorkerCadencesFormProps) {
         className="mt-3.5 flex gap-2.5 items-start px-3.5 py-3 rounded-[9px]"
         style={{ background: "rgba(255,243,214,0.8)", border: "1px solid #fff3d6" }}
       >
-        <Clock className="h-[15px] w-[15px] text-[#c28b00] mt-px shrink-0" strokeWidth={2} />
-        <div className="text-[12.5px] text-[#425466] leading-[1.5]">
+        <Clock className="h-3.75 w-3.75 text-[#c28b00] mt-px shrink-0" strokeWidth={2} />
+        <div className="text-[12.5px] text-[#425466] leading-normal">
           Règle métier : si une cotation disparaît de Brainvape entre deux scans, toutes les
           relances suivantes sont annulées automatiquement et une notification est émise.
         </div>
@@ -139,7 +139,7 @@ function DelayInput({ value, onChange }: { value: number; onChange: (v: number) 
 
   return (
     <div
-      className="inline-flex items-center gap-2 h-[34px] px-3 bg-white border rounded-[7px] sfx-shadow-sm transition-all"
+      className="inline-flex items-center gap-2 h-8.5 px-3 bg-white border rounded-[7px] sfx-shadow-sm transition-all"
       style={{ border: `1px solid ${focused ? "#0057ff" : "#d8dee6"}`, boxShadow: focused ? "0 0 0 3px #f2f6ff" : undefined }}
     >
       <input

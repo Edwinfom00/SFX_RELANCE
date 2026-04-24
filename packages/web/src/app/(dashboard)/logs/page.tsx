@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { LogsView } from "@/modules/logs/components/logs-view";
 
 interface LogsPageProps {
-  searchParams?: Promise<{ status?: string }>;
+  searchParams?: Promise<{ status?: string; page?: string }>;
 }
 
 export default async function LogsPage({ searchParams }: LogsPageProps) {

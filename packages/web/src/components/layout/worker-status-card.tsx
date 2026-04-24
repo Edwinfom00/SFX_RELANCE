@@ -1,81 +1,124 @@
-import prisma from "@/lib/prisma";
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getWorkerStatusAction } from "@/modules/worker/actions/control";
 
-async function getWorkerStatus() {
-  const [config, pendingCount, lastLog] = await Promise.all([
-    prisma.workerConfig.findFirst({
-      select: { intervalMinutes: true, sendWindowStart: true, sendWindowEnd: true },
-    }),
-    prisma.quotation.count({ where: { status: "ACTIVE", nextReminderAt: { lte: new Date() } } }),
-    prisma.emailLog.findFirst({
-      orderBy: { createdAt: "desc" },
-      select: { createdAt: true, status: true },
-    }),
-  ]);
-
-  const intervalMinutes = config?.intervalMinutes ?? 30;
-  const intervalSeconds = intervalMinutes * 60;
-
-  // Temps restant = combien de secondes avant le prochain tick
-  // On calcule la position dans le cycle courant via modulo
-  let nextInSeconds = intervalSeconds;
-  if (lastLog?.createdAt) {
-    const elapsedSeconds = Math.floor((Date.now() - new Date(lastLog.createdAt).getTime()) / 1000);
-    // Position dans le cycle courant (modulo pour gérer les cycles multiples)
-    const positionInCycle = elapsedSeconds % intervalSeconds;
-    nextInSeconds = intervalSeconds - positionInCycle;
-  }
-
-  const mm = Math.floor(nextInSeconds / 60);
-  const ss = nextInSeconds % 60;
-  const nextLabel = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
-
-  // Progression = position dans le cycle courant (0 = début, 100 = fin)
-  const progress = lastLog?.createdAt
-    ? Math.floor(((intervalSeconds - nextInSeconds) / intervalSeconds) * 100)
-    : 0;
-
-  const isActive = true; // Le worker tourne en tant que service séparé
-
-  return { nextLabel, progress, pendingCount, intervalMinutes, isActive };
+interface WorkerStatus {
+  paused: boolean;
+  lastTickAt: string | null;
+  lastTickDurationMs: number | null;
+  tickCount: number;
+  uptimeSeconds: number;
 }
 
-export async function WorkerStatusCard() {
-  const { nextLabel, progress, pendingCount, isActive } = await getWorkerStatus();
+export function WorkerStatusCard() {
+  const [status, setStatus]         = useState<WorkerStatus | null>(null);
+  const [unreachable, setUnreachable] = useState(false);
+  const [nextLabel, setNextLabel]   = useState("--:--");
+  const [progress, setProgress]     = useState(0);
+  const [intervalMinutes, setIntervalMinutes] = useState(30);
+
+ 
+  async function fetchStatus() {
+    const result = await getWorkerStatusAction();
+    if (result.success && result.data) {
+      setStatus(result.data);
+      setUnreachable(false);
+    } else {
+      setUnreachable(true);
+    }
+  }
+
+  
+  async function fetchInterval() {
+    try {
+      const res = await fetch("/api/worker-interval", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setIntervalMinutes(data.intervalMinutes ?? 30);
+      }
+    } catch {}
+  }
+
+  useEffect(() => {
+    fetchStatus();
+    fetchInterval();
+    const statusInterval = setInterval(fetchStatus, 15_000);
+    return () => clearInterval(statusInterval);
+  }, []);
+
+  
+  useEffect(() => {
+    const tick = () => {
+      if (!status?.lastTickAt) {
+        setNextLabel("--:--");
+        setProgress(0);
+        return;
+      }
+      const intervalSec = intervalMinutes * 60;
+      const elapsed = Math.floor((Date.now() - new Date(status.lastTickAt).getTime()) / 1000);
+      const posInCycle = elapsed % intervalSec;
+      const remaining  = intervalSec - posInCycle;
+
+      const mm = Math.floor(remaining / 60);
+      const ss = remaining % 60;
+      setNextLabel(`${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`);
+      setProgress(Math.floor((posInCycle / intervalSec) * 100));
+    };
+
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, [status?.lastTickAt, intervalMinutes]);
+
+  const isOnline = !unreachable && status !== null;
+  const isPaused = status?.paused ?? false;
+
+  const dotColor = unreachable ? "#cd3d64" : isPaused ? "#c28b00" : "#0e9f6e";
+  const dotGlow  = unreachable ? "#ffe1e6" : isPaused ? "#fff3d6" : "#defbe6";
+  const barColor = unreachable ? "#cd3d64" : isPaused ? "#c28b00" : "#0e9f6e";
+
+  const statusLabel = unreachable
+    ? "Worker injoignable"
+    : isPaused
+      ? "Worker en pause"
+      : "Worker actif";
 
   return (
     <Link href="/worker" className="block mx-3.5 mb-3.5 no-underline">
       <div className="p-3 bg-white border border-[#e6ebf1] rounded-[9px] hover:border-[#0057ff]/30 transition-colors cursor-pointer">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-1.75 h-1.75 rounded-full"
-              style={{
-                background: isActive ? "#0e9f6e" : "#cd3d64",
-                boxShadow: isActive ? "0 0 0 3px #defbe6" : "0 0 0 3px #ffe1e6",
-              }}
-            />
-            <span className="text-xs font-semibold text-[#0a2540]">
-              {isActive ? "Worker actif" : "Worker inactif"}
-            </span>
+        <div className="flex items-center gap-1.5 mb-2">
+          <span
+            className="w-1.75 h-1.75 rounded-full shrink-0"
+            style={{ background: dotColor, boxShadow: `0 0 0 3px ${dotGlow}` }}
+          />
+          <span className="text-xs font-semibold text-[#0a2540]">{statusLabel}</span>
+        </div>
+
+        {isOnline && !isPaused && (
+          <div className="text-[11px] text-[#697386] leading-[1.45]">
+            Prochaine exécution dans{" "}
+            <b className="text-[#0a2540] font-mono tabular-nums">{nextLabel}</b>
           </div>
-        </div>
-        {pendingCount > 0 && (
-            <span className="text-[10px] font-semibold text-[#c28b00] bg-[#fff3d6] px-1.5 py-0.5 rounded-full">
-              {pendingCount} due{pendingCount > 1 ? "s" : ""}
-            </span>
-          )}
-        <div className="text-[11px] text-[#697386] leading-[1.45]">
-          Prochaine exécution dans{" "}
-          <b className="text-[#0a2540] font-mono tabular-nums">{nextLabel}</b>
-        </div>
+        )}
+
+        {isPaused && (
+          <div className="text-[11px] text-[#c28b00]">
+            Les envois sont suspendus
+          </div>
+        )}
+
+        {unreachable && (
+          <div className="text-[11px] text-[#cd3d64]">
+            Vérifiez que le service est démarré
+          </div>
+        )}
+
         <div className="mt-2 h-0.75 bg-[#e6ebf1] rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${progress}%`,
-              background: isActive ? "#0e9f6e" : "#cd3d64",
-            }}
+            className="h-full rounded-full transition-all duration-1000"
+            style={{ width: `${isOnline && !isPaused ? progress : 0}%`, background: barColor }}
           />
         </div>
       </div>

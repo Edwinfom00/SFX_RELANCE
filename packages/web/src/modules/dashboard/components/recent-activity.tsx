@@ -76,7 +76,7 @@ export async function RecentActivity() {
                 style={{ borderBottom: i < recentLogs.length - 1 ? "1px solid #e6ebf1" : "none" }}
               >
                 <div
-                  className="w-[30px] h-[30px] rounded-[7px] flex items-center justify-center shrink-0"
+                  className="w-7.5 h-7.5 rounded-[7px] flex items-center justify-center shrink-0"
                   style={{
                     background: isFailed ? "#ffe1e6" : "#e7efff",
                     color: isFailed ? "#cd3d64" : "#0057ff",
@@ -97,7 +97,7 @@ export async function RecentActivity() {
                 {log.quotation?.transportType && (
                   <TransportBadge type={log.quotation.transportType} />
                 )}
-                <span className="text-[11px] text-[#8898aa] font-mono min-w-[68px] text-right">
+                <span className="text-[11px] text-[#8898aa] font-mono min-w-17 text-right">
                   {timeAgo(new Date(log.createdAt))}
                 </span>
               </div>
@@ -130,7 +130,7 @@ export async function RecentActivity() {
                 }}
               >
                 <div
-                  className="min-w-[64px] text-[12px] font-mono font-semibold tabular-nums"
+                  className="min-w-16 text-[12px] font-mono font-semibold tabular-nums"
                   style={{ color: i === 0 ? "#0057ff" : "#0a2540" }}
                 >
                   {q.nextReminderAt ? formatCountdown(new Date(q.nextReminderAt)) : "—"}

@@ -18,7 +18,6 @@ export async function DashboardCharts({ period = 30 }: { period?: number }) {
   const { sentByDay, completedByDay, totalSent, totalCompleted, labels } = activity;
   const { air, sea, road, total } = transport;
 
-  // Éviter division par zéro si pas encore de données
   const safeTotal = total || 1;
 
   return (

@@ -22,7 +22,7 @@ function QuotationsTableSkeleton() {
     <div className="bg-white border border-[#e6ebf1] rounded-xl overflow-hidden sfx-shadow-sm animate-pulse">
       <div className="h-11 bg-[#fafbfc] border-b border-[#e6ebf1]" />
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="h-[58px] border-b border-[#e6ebf1] last:border-0" />
+        <div key={i} className="h-14.5 border-b border-[#e6ebf1] last:border-0" />
       ))}
     </div>
   );

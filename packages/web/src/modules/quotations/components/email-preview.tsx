@@ -94,7 +94,7 @@ export function EmailPreview({
         </div>
 
         {/* Body */}
-        <div className="px-5 py-4 text-[13px] text-[#0a2540] leading-[1.7] whitespace-pre-wrap font-sans max-h-[320px] overflow-auto">
+        <div className="px-5 py-4 text-[13px] text-[#0a2540] leading-[1.7] whitespace-pre-wrap font-sans max-h-80 overflow-auto">
           {body}
         </div>
       </div>

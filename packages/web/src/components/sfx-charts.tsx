@@ -1,8 +1,6 @@
-// SFX Charts — SVG pur, fidèles au prototype (pas de lib externe)
-
 "use client";
 
-// ─── Sparkline ────────────────────────────────────────────────────────────────
+
 interface SparklineProps {
   data: number[];
   color?: string;
@@ -41,7 +39,7 @@ export function Sparkline({ data, color = "#0057ff", w = 120, h = 36, fill = tru
   );
 }
 
-// ─── LineChart ────────────────────────────────────────────────────────────────
+
 interface LineSeries {
   color: string;
   data: number[];
@@ -121,7 +119,7 @@ export function LineChart({ series, labels, w = 640, h = 236, yTicks = 4 }: Line
   );
 }
 
-// ─── Donut ────────────────────────────────────────────────────────────────────
+
 interface DonutSegment {
   value: number;
   color: string;
@@ -177,7 +175,7 @@ export function Donut({ segments, size = 150, thickness = 20, center }: DonutPro
   );
 }
 
-// ─── Heatmap ──────────────────────────────────────────────────────────────────
+
 interface HeatmapProps {
   data: number[][];
   w?: number;
@@ -224,7 +222,7 @@ export function Heatmap({ data, w = 640, days = ["L", "M", "M", "J", "V", "S", "
   );
 }
 
-// ─── BarList ──────────────────────────────────────────────────────────────────
+
 interface BarItem {
   label: string;
   value: number;
@@ -239,10 +237,10 @@ interface BarListProps {
 export function BarList({ items, max }: BarListProps) {
   const m = max ?? Math.max(...items.map((i) => i.value));
   return (
-    <div className="flex flex-col gap-[11px]">
+    <div className="flex flex-col gap-2.75">
       {items.map((it, i) => (
         <div key={i}>
-          <div className="flex justify-between mb-[5px]">
+          <div className="flex justify-between mb-1.25">
             <span className="text-[12.5px] text-[#0a2540] font-medium">{it.label}</span>
             <span className="text-xs text-[#697386] font-mono tabular-nums">{it.value}</span>
           </div>

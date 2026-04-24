@@ -33,7 +33,7 @@ export async function WorkerStatsRail() {
   return (
     <div className="flex flex-col gap-3.5">
       {/* Next run */}
-      <SfxCard className="p-[18px]">
+      <SfxCard className="p-4.5">
         <div className="text-[12px] font-semibold text-[#697386] tracking-[0.04em] uppercase mb-2.5">
           Dernière exécution
         </div>
@@ -53,12 +53,12 @@ export async function WorkerStatsRail() {
       </SfxCard>
 
       {/* Stats */}
-      <SfxCard className="p-[18px]">
+      <SfxCard className="p-4.5">
         <div className="text-[12px] font-semibold text-[#697386] tracking-[0.04em] uppercase mb-3">
           Statistiques globales
         </div>
         {statRows.map((s) => (
-          <div key={s.l} className="flex justify-between items-center py-[7px] border-t border-[#e6ebf1]">
+          <div key={s.l} className="flex justify-between items-center py-1.75 border-t border-[#e6ebf1]">
             <span className="text-[12.5px] text-[#425466]">{s.l}</span>
             <span
               className="text-[13px] font-semibold font-mono tabular-nums"
@@ -71,7 +71,7 @@ export async function WorkerStatsRail() {
       </SfxCard>
 
       {/* CPU + logs */}
-      <SfxCard className="p-[18px]">
+      <SfxCard className="p-4.5">
         <div className="flex items-center justify-between mb-2.5">
           <div className="text-[12px] font-semibold text-[#697386] tracking-[0.04em] uppercase">
             Activité récente

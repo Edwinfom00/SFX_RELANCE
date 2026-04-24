@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback } from "react";
-import { SfxButton } from "@/components/sfx-ui";
+
 
 const statusTabs = [
   { label: "Tous",        value: "ALL" },
@@ -40,7 +40,7 @@ export function LogsFilters() {
           <button
             key={t.value}
             onClick={() => update("status", t.value)}
-            className="px-3 py-[7px] rounded-[7px] text-[13px] font-[550] tracking-[-0.005em] cursor-pointer transition-all"
+            className="px-3 py-1.75 rounded-[7px] text-[13px] font-[550] tracking-[-0.005em] cursor-pointer transition-all"
             style={{
               color: isActive ? "#0a2540" : "#697386",
               background: isActive ? "#fff" : "transparent",

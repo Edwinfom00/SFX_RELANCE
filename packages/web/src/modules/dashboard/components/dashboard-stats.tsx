@@ -56,7 +56,7 @@ function KPICard({
 }
 
 export async function DashboardStats({ period = 30 }: { period?: number; stats?: any }) {
-  // Période courante et période précédente pour calculer les deltas
+  
   const [current, previous] = await Promise.all([
     getDashboardStats(period),
     getDashboardStats(period * 2), // double la fenêtre = période précédente incluse

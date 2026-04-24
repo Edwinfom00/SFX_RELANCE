@@ -57,10 +57,10 @@ export function LoginForm() {
                 Adresse email
               </label>
               <div
-                className="flex items-center gap-2.5 h-[42px] px-3 bg-white rounded-lg"
+                className="flex items-center gap-2.5 h-10.5 px-3 bg-white rounded-lg"
                 style={{ border: "1px solid #d8dee6", boxShadow: "0 1px 2px rgba(10,37,64,0.04)" }}
               >
-                <Mail className="h-[15px] w-[15px] text-[#8898aa] shrink-0" />
+                <Mail className="h-3.75 w-3.75 text-[#8898aa] shrink-0" />
                 <input
                   name="email"
                   type="email"
@@ -78,13 +78,13 @@ export function LoginForm() {
                 <label className="text-[12.5px] font-[550] text-[#425466] tracking-[-0.005em]">
                   Mot de passe
                 </label>
-                <a className="text-[12.5px] text-[#0057ff] font-[550] cursor-pointer">Oublié ?</a>
+                {/* <a className="text-[12.5px] text-[#0057ff] font-[550] cursor-pointer">Oublié ?</a> */}
               </div>
               <div
-                className="flex items-center gap-2.5 h-[42px] px-3 bg-white rounded-lg"
+                className="flex items-center gap-2.5 h-10.5 px-3 bg-white rounded-lg"
                 style={{ border: "1.5px solid #0057ff", boxShadow: "0 0 0 3px #f2f6ff" }}
               >
-                <Lock className="h-[15px] w-[15px] text-[#8898aa] shrink-0" />
+                <Lock className="h-3.75 w-3.75 text-[#8898aa] shrink-0" />
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
@@ -99,7 +99,7 @@ export function LoginForm() {
                   className="text-[#8898aa] hover:text-[#425466] transition-colors"
                   tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff className="h-[15px] w-[15px]" /> : <Eye className="h-[15px] w-[15px]" />}
+                  {showPassword ? <EyeOff className="h-3.75 w-3.75" /> : <Eye className="h-3.75 w-3.75" />}
                 </button>
               </div>
             </div>
@@ -110,7 +110,7 @@ export function LoginForm() {
                 className="w-4 h-4 rounded flex items-center justify-center text-white shrink-0"
                 style={{ background: "#0057ff", border: "1px solid #0057ff" }}
               >
-                <Check className="h-[11px] w-[11px]" strokeWidth={3} />
+                <Check className="h-2.75 w-2.75" strokeWidth={3} />
               </div>
               <span className="text-[13px] text-[#425466]">
                 Se souvenir de cet appareil pendant 30 jours
@@ -132,29 +132,7 @@ export function LoginForm() {
               style={{ background: "#0057ff", border: "none", boxShadow: "0 1px 2px rgba(0,87,255,0.25), 0 4px 12px rgba(0,87,255,0.15)", cursor: "pointer" }}
             >
               {isPending ? "Connexion en cours…" : "Se connecter"}
-              {!isPending && <ArrowRight className="h-[15px] w-[15px]" strokeWidth={2.25} />}
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-2.5 my-1.5">
-              <div className="flex-1 h-px bg-[#e6ebf1]" />
-              <span className="text-[11.5px] text-[#8898aa] font-medium">OU CONTINUER AVEC</span>
-              <div className="flex-1 h-px bg-[#e6ebf1]" />
-            </div>
-
-            {/* SSO */}
-            <button
-              type="button"
-              className="h-[42px] rounded-lg bg-white text-[#0a2540] text-[13.5px] font-[550] flex items-center justify-center gap-2.5 transition-colors hover:bg-[#fafbfc]"
-              style={{ border: "1px solid #d8dee6", boxShadow: "0 1px 2px rgba(10,37,64,0.04)", cursor: "pointer" }}
-            >
-              <svg width="16" height="16" viewBox="0 0 21 21">
-                <path fill="#f35325" d="M1 1h9v9H1z" />
-                <path fill="#81bc06" d="M11 1h9v9h-9z" />
-                <path fill="#05a6f0" d="M1 11h9v9H1z" />
-                <path fill="#ffba08" d="M11 11h9v9h-9z" />
-              </svg>
-              Compte Microsoft Entra ID (SSO)
+              {!isPending && <ArrowRight className="h-3.75 w-3.75" strokeWidth={2.25} />}
             </button>
           </form>
 
@@ -171,8 +149,8 @@ export function LoginForm() {
 
         {/* Footer */}
         <div className="flex justify-between text-[11.5px] text-[#8898aa]">
-          <span>© 2026 SFX Logistics · Outil interne</span>
-          <span className="flex gap-[18px]">
+          <span>© 2026 SOFTRONIC INNOVING · Outil interne</span>
+          <span className="flex gap-4.5">
             <a className="hover:text-[#425466] cursor-pointer">Confidentialité</a>
             <a className="hover:text-[#425466] cursor-pointer">Support IT</a>
             <a className="hover:text-[#425466] cursor-pointer">Changelog</a>
@@ -208,8 +186,8 @@ export function LoginForm() {
             <div className="text-[12px] font-semibold tracking-[0.12em] uppercase text-[#0057ff] mb-3.5">
               Automatisation des relances
             </div>
-            <h2 className="text-[36px] font-semibold tracking-[-0.03em] leading-[1.1] m-0 text-[#0a2540] max-w-[440px]">
-              Plus une cotation ne passe entre les mailles.
+            <h2 className="text-[36px] font-semibold tracking-[-0.03em] leading-[1.1] m-0 text-[#0a2540] max-w-110">
+              Plus aucunes cotations ne passe entre les mailles.
             </h2>
           </div>
 
@@ -217,10 +195,10 @@ export function LoginForm() {
           <div className="flex flex-col gap-3 mt-8">
             {/* Metric card */}
             <div
-              className="bg-white rounded-xl p-[18px] flex items-center gap-[18px]"
+              className="bg-white rounded-xl p-4.5 flex items-center gap-4.5"
               style={{ border: "1px solid #e6ebf1", boxShadow: "0 12px 32px rgba(10,37,64,0.08)", transform: "rotate(-1deg)" }}
             >
-              <div className="w-[42px] h-[42px] rounded-[10px] bg-[#defbe6] text-[#0e9f6e] flex items-center justify-center shrink-0">
+              <div className="w-10.5 h-10.5 rounded-[10px] bg-[#defbe6] text-[#0e9f6e] flex items-center justify-center shrink-0">
                 <TrendingUp className="h-5 w-5" strokeWidth={2.25} />
               </div>
               <div className="flex-1">
@@ -254,7 +232,7 @@ export function LoginForm() {
               style={{ border: "1px solid #e6ebf1", boxShadow: "0 12px 32px rgba(10,37,64,0.08)", transform: "translateX(-24px)" }}
             >
               <div className="w-9 h-9 rounded-[10px] bg-[#defbe6] text-[#0e9f6e] flex items-center justify-center shrink-0">
-                <Check className="h-[18px] w-[18px]" strokeWidth={2.5} />
+                <Check className="h-4.5 w-4.5" strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[13px] font-semibold text-[#0a2540]">Client a répondu</div>

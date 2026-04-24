@@ -45,7 +45,7 @@ export function QuotationsFilters() {
               <button
                 key={t.value}
                 onClick={() => update("transportType", t.value)}
-                className="flex items-center gap-1.5 px-3 py-[7px] rounded-[7px] text-[13px] font-[550] tracking-[-0.005em] cursor-pointer transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.75 rounded-[7px] text-[13px] font-[550] tracking-[-0.005em] cursor-pointer transition-all"
                 style={{
                   color: isActive ? "#0a2540" : "#697386",
                   background: isActive ? "#fff" : "transparent",
@@ -53,7 +53,7 @@ export function QuotationsFilters() {
                   boxShadow: isActive ? "0 1px 2px rgba(10,37,64,0.04)" : "none",
                 }}
               >
-                {Icon && <Icon className="h-[13px] w-[13px]" style={{ color: (t as any).iconColor }} strokeWidth={2} />}
+                {Icon && <Icon className="h-3.25 w-3.25" style={{ color: (t as any).iconColor }} strokeWidth={2} />}
                 {t.label}
               </button>
             );
@@ -69,7 +69,7 @@ export function QuotationsFilters() {
       {/* Search bar */}
       <div className="flex items-center gap-2.5">
         <div
-          className="flex items-center gap-2 flex-1 h-[34px] px-3 bg-white border border-[#e6ebf1] rounded-[7px] sfx-shadow-sm"
+          className="flex items-center gap-2 flex-1 h-8.5 px-3 bg-white border border-[#e6ebf1] rounded-[7px] sfx-shadow-sm"
         >
           <Search className="h-3.5 w-3.5 text-[#8898aa] shrink-0" />
           <input

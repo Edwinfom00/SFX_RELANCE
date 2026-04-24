@@ -85,14 +85,14 @@ export function WorkerSmtpForm({ config }: WorkerSmtpFormProps) {
           <button
             type="button"
             onClick={() => setSecure((v) => !v)}
-            className="flex items-center gap-1.5 h-[34px] px-3 rounded-[7px] text-[12.5px] font-medium transition-all"
+            className="flex items-center gap-1.5 h-8.5 px-3 rounded-[7px] text-[12.5px] font-medium transition-all"
             style={{
               background: secure ? "#e7efff" : "#fff",
               color: secure ? "#0057ff" : "#697386",
               border: `1px solid ${secure ? "#0057ff" : "#d8dee6"}`,
             }}
           >
-            <div className="w-7 h-[15px] rounded-full p-0.5 transition-colors" style={{ background: secure ? "#0057ff" : "#d8dee6" }}>
+            <div className="w-7 h-3.75 rounded-full p-0.5 transition-colors" style={{ background: secure ? "#0057ff" : "#d8dee6" }}>
               <div className="w-3 h-3 rounded-full bg-white transition-transform" style={{ transform: secure ? "translateX(12px)" : "translateX(0)" }} />
             </div>
             TLS
@@ -103,7 +103,7 @@ export function WorkerSmtpForm({ config }: WorkerSmtpFormProps) {
       <SettingRow label="Authentification" hint="Identifiants de connexion au serveur SMTP." compact>
         <div className="flex items-center gap-2">
           <SmtpInput value={user} onChange={setUser} placeholder="user@gmail.com" className="flex-1" />
-          <div className="flex items-center gap-2 h-[34px] px-3 bg-white border border-[#d8dee6] rounded-[7px] sfx-shadow-sm flex-1">
+          <div className="flex items-center gap-2 h-8.5 px-3 bg-white border border-[#d8dee6] rounded-[7px] sfx-shadow-sm flex-1">
             <input
               type={showPass ? "text" : "password"}
               value={pass}
@@ -144,7 +144,7 @@ export function WorkerSmtpForm({ config }: WorkerSmtpFormProps) {
           style={{ background: "rgba(10,37,64,0.4)", backdropFilter: "blur(4px)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowTestModal(false); }}
         >
-          <div className="bg-white rounded-xl w-[440px] sfx-shadow-lg overflow-hidden">
+          <div className="bg-white rounded-xl w-110 sfx-shadow-lg overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6ebf1]">
               <div>

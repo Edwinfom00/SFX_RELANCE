@@ -58,7 +58,7 @@ export function SendNowDialog({
           style={{ background: "rgba(10,37,64,0.45)", backdropFilter: "blur(4px)" }}
           onClick={(e) => { if (e.target === e.currentTarget && state !== "loading") setOpen(false); }}
         >
-          <div className="bg-white rounded-xl w-[460px] sfx-shadow-lg overflow-hidden">
+          <div className="bg-white rounded-xl w-115 sfx-shadow-lg overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6ebf1]">
               <div>
@@ -99,7 +99,7 @@ export function SendNowDialog({
 
                   <div className="flex items-start gap-2.5 px-3 py-2.5 bg-[#fff3d6] border border-[#c28b00]/20 rounded-lg">
                     <span className="text-[#c28b00] text-[13px] shrink-0 mt-px">⚠️</span>
-                    <div className="text-[12px] text-[#425466] leading-[1.5]">
+                    <div className="text-[12px] text-[#425466] leading-normal">
                       L'email sera envoyé <b className="text-[#0a2540]">immédiatement</b>.
                       Le compteur de relances sera mis à jour et la prochaine relance replanifiée.
                     </div>

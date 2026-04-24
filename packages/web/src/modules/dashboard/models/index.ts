@@ -18,7 +18,7 @@ export async function getDashboardStats(days = 30) {
   return { totalActive, totalCompleted, totalCancelled, emailsSentToday: emailsSentPeriod, emailsFailed, pendingReminders };
 }
 
-/** Activité jour par jour sur la période */
+
 export async function getDailyActivity(days = 30) {
   const since = new Date();
   since.setDate(since.getDate() - (days - 1));
@@ -66,7 +66,7 @@ export async function getDailyActivity(days = 30) {
   };
 }
 
-/** Répartition des cotations actives par type de transport */
+
 export async function getTransportBreakdown() {
   const rows = await prisma.quotation.groupBy({
     by: ["transportType"],
@@ -81,7 +81,7 @@ export async function getTransportBreakdown() {
   return { air: map.AIR, sea: map.SEA, road: map.ROAD, total };
 }
 
-/** Taux de réponse par transport sur la période */
+
 export async function getResponseRateByTransport(days = 30) {
   const since = new Date();
   since.setDate(since.getDate() - days);
@@ -117,7 +117,6 @@ export async function getResponseRateByTransport(days = 30) {
   return { AIR: rate("AIR"), SEA: rate("SEA"), ROAD: rate("ROAD") };
 }
 
-/** Heatmap : densité d'envois par jour de semaine × heure sur la période */
 export async function getHeatmapData(days = 90) {
   const since = new Date();
   since.setDate(since.getDate() - days);

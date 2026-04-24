@@ -32,7 +32,7 @@ export function LogsTable({ logs }: LogsTableProps) {
     <div className="bg-white border border-[#e6ebf1] rounded-xl overflow-hidden sfx-shadow-sm">
       {/* Header */}
       <div
-        className="grid gap-3.5 items-center px-[18px] py-3 border-b border-[#e6ebf1] bg-[#fafbfc]"
+        className="grid gap-3.5 items-center px-4.5 py-3 border-b border-[#e6ebf1] bg-[#fafbfc]"
         style={{ gridTemplateColumns: "1.2fr 1.5fr 100px 100px 80px 140px 32px" }}
       >
         {["Cotation", "Destinataire", "Relance", "Statut", "Tentatives", "Date d'envoi", ""].map((h, i) => (
@@ -44,7 +44,7 @@ export function LogsTable({ logs }: LogsTableProps) {
       {logs.map((log, i) => (
         <div
           key={log.id}
-          className="grid gap-3.5 items-center px-[18px] py-3.5 hover:bg-[#fafbfc] transition-colors"
+          className="grid gap-3.5 items-center px-4.5 py-3.5 hover:bg-[#fafbfc] transition-colors"
           style={{
             gridTemplateColumns: "1.2fr 1.5fr 100px 100px 80px 140px 32px",
             borderBottom: i < logs.length - 1 ? "1px solid #e6ebf1" : "none",
@@ -112,7 +112,7 @@ export function LogsTable({ logs }: LogsTableProps) {
       ))}
 
       {/* Footer */}
-      <div className="px-[18px] py-3 border-t border-[#e6ebf1] bg-[#fafbfc] text-[12.5px] text-[#425466]">
+      <div className="px-4.5 py-3 border-t border-[#e6ebf1] bg-[#fafbfc] text-[12.5px] text-[#425466]">
         <b className="text-[#0a2540]">{logs.length}</b> entrée{logs.length > 1 ? "s" : ""}
         {logs.length === 200 && " (limité à 200)"}
       </div>

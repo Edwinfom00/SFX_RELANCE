@@ -3,6 +3,7 @@
 import { Bell, Search } from "lucide-react";
 import { KBD, SfxAvatar } from "@/components/sfx-ui";
 import { logoutAction } from "@/modules/auth/actions";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,11 +17,12 @@ interface TopbarProps {
   actions?: React.ReactNode;
   userName?: string;
   userEmail?: string;
+  userRole?: string;
 }
 
-export function Topbar({ title, subtitle, actions, userName = "Admin", userEmail = "" }: TopbarProps) {
+export function Topbar({ title, subtitle, actions, userName = "Admin", userEmail = "", userRole }: TopbarProps) {
   return (
-    <header className="h-[60px] border-b border-[#e6ebf1] flex items-center px-7 gap-5 bg-white shrink-0">
+    <header className="h-15 border-b border-[#e6ebf1] flex items-center px-7 gap-5 bg-white shrink-0">
       {/* Title */}
       <div className="flex-1 min-w-0">
         {title && (
@@ -35,20 +37,23 @@ export function Topbar({ title, subtitle, actions, userName = "Admin", userEmail
         )}
       </div>
 
-      {/* Command palette */}
-      <div className="flex items-center gap-2 h-8 px-2.5 min-w-[280px] bg-[#f6f8fa] border border-[#e6ebf1] rounded-[7px] text-[#697386] text-[13px]">
+      {/* Command palette trigger */}
+      <button
+        onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }))}
+        className="flex items-center gap-2 h-8 px-2.5 min-w-70 bg-[#f6f8fa] border border-[#e6ebf1] rounded-[7px] text-[#697386] text-[13px] hover:border-[#0057ff]/30 hover:bg-white transition-all cursor-pointer"
+      >
         <Search className="h-3.5 w-3.5 shrink-0" />
-        <span className="flex-1">Rechercher cotations, clients…</span>
+        <span className="flex-1 text-left">Rechercher cotations, clients…</span>
         <KBD>⌘K</KBD>
-      </div>
+      </button>
 
       {/* Actions slot */}
       {actions}
 
       {/* Notifications */}
       <div className="relative w-8 h-8 rounded-[7px] bg-[#f6f8fa] border border-[#e6ebf1] flex items-center justify-center text-[#697386] cursor-pointer hover:bg-[#f0f2f5] transition-colors">
-        <Bell className="h-[15px] w-[15px]" />
-        <span className="absolute top-1.5 right-1.5 w-[7px] h-[7px] bg-[#cd3d64] rounded-full border-[1.5px] border-white" />
+        <Bell className="h-3.75 w-3.75" />
+        <span className="absolute top-1.5 right-1.5 w-1.75 h-1.75 bg-[#cd3d64] rounded-full border-[1.5px] border-white" />
       </div>
 
       {/* User */}
@@ -61,7 +66,7 @@ export function Topbar({ title, subtitle, actions, userName = "Admin", userEmail
           <SfxAvatar name={userName} size={30} />
           <div className="leading-[1.15]">
             <div className="text-[12.5px] font-semibold text-[#0a2540]">{userName}</div>
-            <div className="text-[11px] text-[#697386]">Admin</div>
+            <div className="text-[11px] text-[#697386]">{userRole ?? "—"}</div>
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
@@ -74,6 +79,11 @@ export function Topbar({ title, subtitle, actions, userName = "Admin", userEmail
               </div>
             </div>
           </div>
+          <Link href="/profile">
+            <DropdownMenuItem className="cursor-pointer gap-2">
+              Mon profil
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuItem
             className="text-destructive cursor-pointer gap-2"
             onClick={() => logoutAction()}
