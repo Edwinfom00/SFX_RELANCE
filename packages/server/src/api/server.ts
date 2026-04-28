@@ -18,7 +18,7 @@ export const workerState: WorkerState = {
   startedAt:          new Date(),
 };
 
-/** Exécute un tick complet (sync + relances) et met à jour workerState. */
+
 export async function runTick(): Promise<void> {
   const start = Date.now();
   await syncQuotations();
@@ -28,7 +28,7 @@ export async function runTick(): Promise<void> {
   workerState.tickCount++;
 }
 
-/** Démarre le serveur HTTP de contrôle du worker sur le port WORKER_API_PORT (défaut 3002). */
+
 export function startApiServer(): void {
   const app   = express();
   const port  = Number(process.env.WORKER_API_PORT ?? 3002);
@@ -45,7 +45,7 @@ export function startApiServer(): void {
     next();
   });
 
-  /** GET /status — état courant du worker */
+
   app.get("/status", (_req, res) => {
     res.json({
       paused:             workerState.paused,
@@ -56,7 +56,7 @@ export function startApiServer(): void {
     });
   });
 
-  /** POST /tick — force un tick immédiat */
+
   app.post("/tick", async (_req, res) => {
     if (workerState.paused) {
       res.status(409).json({ error: "Worker is paused" });
@@ -70,20 +70,19 @@ export function startApiServer(): void {
     }
   });
 
-  /** POST /pause — arrête le cycle après le tick courant */
   app.post("/pause", (_req, res) => {
     workerState.paused = true;
     console.log("[Worker API] Paused — cycle will stop after current tick");
     res.json({ success: true, paused: true });
   });
 
-  /** POST /resume — reprend le cycle immédiatement */
+
   app.post("/resume", (_req, res) => {
     const wasPaused = workerState.paused;
     workerState.paused = false;
     console.log("[Worker API] Resumed");
     if (wasPaused) {
-      // Import dynamique pour éviter la dépendance circulaire api ↔ worker
+ 
       import("../jobs/worker")
         .then(({ resumeCycle }) => resumeCycle())
         .catch((err) => console.error("[Worker API] Resume error:", err));

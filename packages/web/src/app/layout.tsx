@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <body className="h-full bg-background text-foreground antialiased">
-        <TooltipProvider delayDuration={200}>
+        <TooltipProvider>
           {children}
           <Toaster position="bottom-right" richColors />
         </TooltipProvider>

@@ -10,7 +10,7 @@ function getKey(): Buffer {
   return Buffer.from(hex, "hex");
 }
 
-/** Chiffre une chaîne avec AES-256-CBC. Retourne "iv:ciphertext" en hex. */
+
 export function encrypt(plaintext: string): string {
   if (!plaintext) return "";
   const iv  = randomBytes(16);
@@ -19,7 +19,7 @@ export function encrypt(plaintext: string): string {
   return `${iv.toString("hex")}:${enc.toString("hex")}`;
 }
 
-/** Déchiffre une valeur produite par encrypt(). Retourne "" si invalide. */
+
 export function decrypt(stored: string): string {
   if (!stored || !stored.includes(":")) return "";
   try {
