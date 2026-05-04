@@ -74,6 +74,7 @@ model Quotation {
   quotationId      String    @unique @map("quotation_id")
   clientCode       String    @map("client_code")
   clientEmail      String    @map("client_email")
+  clientLanguage   String    @default("FR") @map("client_language")
   libelle          String    @default("") @map("libelle")
   transmissionDate DateTime  @map("transmission_date")
   transportType    String    @map("transport_type")

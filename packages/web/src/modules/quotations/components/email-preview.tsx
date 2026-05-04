@@ -8,6 +8,7 @@ interface EmailPreviewProps {
   quotationId: string;
   libelle: string;
   clientEmail: string;
+  clientLanguage: string;
   nextReminderNumber: number;
   nextReminderAt: Date | null;
   template: {
@@ -31,10 +32,12 @@ function resolveVars(text: string, quotationId: string, libelle: string): string
 }
 
 export function EmailPreview({
-  quotationId, libelle, clientEmail, nextReminderNumber,
-  nextReminderAt, template, smtpFrom,
+  quotationId, libelle, clientEmail, clientLanguage,
+  nextReminderNumber, nextReminderAt, template, smtpFrom,
 }: EmailPreviewProps) {
-  const [lang, setLang] = useState<"fr" | "en">("fr");
+  // Langue par défaut basée sur clientLanguage de BrainOpx
+  const defaultLang: "fr" | "en" = clientLanguage && clientLanguage !== "FR" && clientLanguage !== "fr" ? "en" : "fr";
+  const [lang, setLang] = useState<"fr" | "en">(defaultLang);
 
   if (!template) {
     return (

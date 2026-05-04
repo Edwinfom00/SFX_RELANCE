@@ -49,6 +49,7 @@ export async function sendReminderNowAction(
 
     const template = await prisma.emailTemplate.findFirst({
       where: { transportType: quotation.transportType, reminderNumber: nextReminderNumber, isActive: true },
+      select: { id: true, subject: true, subjectEn: true, body: true, bodyEn: true },
     });
     if (!template) return { success: false, error: `Aucun template actif pour la relance #${nextReminderNumber}.` };
 
@@ -65,9 +66,15 @@ export async function sendReminderNowAction(
 
     if (!host || !user || !pass) return { success: false, error: "Configuration SMTP incomplète." };
 
-    const libelle = (quotation as any).libelle || quotation.clientCode;
-    const subject = resolveVars(template.subject, quotation.quotationId, libelle, quotation.clientCode);
-    const html    = textToHtml(resolveVars(template.body, quotation.quotationId, libelle, quotation.clientCode));
+    const libelle  = (quotation as any).libelle         || quotation.clientCode;
+    const lang     = (quotation as any).clientLanguage   ?? "FR";
+    const isEn     = lang !== "FR" && lang !== "fr";
+
+    const subjectTpl = isEn && template.subjectEn ? template.subjectEn : template.subject;
+    const bodyTpl    = isEn && template.bodyEn    ? template.bodyEn    : template.body;
+
+    const subject = resolveVars(subjectTpl, quotation.quotationId, libelle, quotation.clientCode);
+    const html    = textToHtml(resolveVars(bodyTpl,    quotation.quotationId, libelle, quotation.clientCode));
 
     // Log PENDING
     const log = await prisma.emailLog.create({

@@ -6,6 +6,7 @@ export interface Quotation {
   quotationId: string;
   clientCode: string;
   clientEmail: string;
+  clientLanguage: string;
   libelle: string;
   transmissionDate: Date;
   transportType: TransportType;

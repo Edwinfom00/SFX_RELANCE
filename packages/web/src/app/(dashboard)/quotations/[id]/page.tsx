@@ -309,6 +309,7 @@ export default async function QuotationDetailPage({ params }: { params: Promise<
             quotationId={quotation.quotationId}
             libelle={quotation.libelle}
             clientEmail={quotation.clientEmail}
+            clientLanguage={(quotation as any).clientLanguage ?? "FR"}
             nextReminderNumber={nextReminderNumber}
             nextReminderAt={quotation.nextReminderAt}
             template={nextTemplate}

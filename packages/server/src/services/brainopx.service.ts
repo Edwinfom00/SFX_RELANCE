@@ -23,6 +23,7 @@ interface BrainOpxRow {
   libelle: string;
   client_code: string;
   client_email: string;
+  client_language: string; // ex: "US", "FR", "GB"
   transmission_date: Date;
   transport_type: "AIR" | "SEA" | "ROAD";
 }
@@ -31,7 +32,7 @@ interface BrainOpxRow {
 async function fetchFromBrainOpx(): Promise<BrainOpxRow[]> {
   const db = process.env.BRAINOPX_DATABASE ?? "BopxFMT";
   return prisma.$queryRawUnsafe<BrainOpxRow[]>(`
-    SELECT quotation_id, libelle, client_code, client_email, transmission_date, transport_type
+    SELECT quotation_id, libelle, client_code, client_email, client_language, transmission_date, transport_type
     FROM [${db}].[dbo].[v_sfx_active_quotations]
   `);
 }
@@ -64,8 +65,14 @@ export async function syncQuotations(): Promise<void> {
 
   for (const row of rows) {
     const existing = existingMap.get(row.quotation_id);
-    if (existing && !existing.libelle && row.libelle) {
-      await prisma.quotation.update({ where: { id: existing.id }, data: { libelle: row.libelle } });
+    if (existing) {
+      // Mettre à jour libelle et clientLanguage si vides
+      const updates: Record<string, string> = {};
+      if (!existing.libelle && row.libelle) updates.libelle = row.libelle;
+      if (!(existing as any).clientLanguage && row.client_language) updates.clientLanguage = row.client_language;
+      if (Object.keys(updates).length > 0) {
+        await prisma.quotation.update({ where: { id: existing.id }, data: updates });
+      }
     }
   }
 
@@ -90,6 +97,7 @@ export async function syncQuotations(): Promise<void> {
         libelle:          row.libelle ?? "",
         clientCode:       row.client_code,
         clientEmail:      row.client_email,
+        clientLanguage:   row.client_language ?? "FR",
         transmissionDate: new Date(row.transmission_date),
         transportType,
         status:           "ACTIVE",

@@ -174,6 +174,7 @@ async function sendReminder(
 
   const template = await prisma.emailTemplate.findFirst({
     where: { transportType: quotation.transportType, reminderNumber, isActive: true },
+    select: { id: true, subject: true, subjectEn: true, body: true, bodyEn: true },
   });
   if (!template) {
     console.warn(`${tag} Pas de template pour ${quotation.transportType} #${reminderNumber}`);
@@ -181,9 +182,16 @@ async function sendReminder(
     return;
   }
 
-  const libelle = (quotation as any).libelle || quotation.clientCode;
-  const subject = resolveTemplate(template.subject, { ...quotation, libelle });
-  const html    = textToHtml(resolveTemplate(template.body, { ...quotation, libelle }));
+  const libelle  = (quotation as any).libelle         || quotation.clientCode;
+  const lang     = (quotation as any).clientLanguage   ?? "FR";
+  const isEn     = lang !== "FR" && lang !== "fr";
+
+  // Utiliser le template EN si la langue du client n'est pas FR
+  const subjectTpl = isEn && template.subjectEn ? template.subjectEn : template.subject;
+  const bodyTpl    = isEn && template.bodyEn    ? template.bodyEn    : template.body;
+
+  const subject = resolveTemplate(subjectTpl, { ...quotation, libelle });
+  const html    = textToHtml(resolveTemplate(bodyTpl, { ...quotation, libelle }));
 
   const log = await prisma.emailLog.create({
     data: {
