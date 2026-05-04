@@ -1,0 +1,44 @@
+services:
+
+  server:
+    build:
+      context: .
+      dockerfile: packages/server/Dockerfile
+    container_name: sfx-server
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      # DATABASE_URL vient directement de .env.docker (déjà encodée)
+      WORKER_API_PORT: "3002"
+    ports:
+      - "4002:3002"
+    networks:
+      - sfx-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+    container_name: sfx-web
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      # DATABASE_URL vient directement de .env.docker (déjà encodée)
+      # WORKER_API_URL pointe vers le service server via le réseau Docker interne
+      WORKER_API_URL: "http://server:3002"
+    ports:
+      - "4001:3001"
+    depends_on:
+      - server
+    networks:
+      - sfx-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  sfx-network:
+    driver: bridge
