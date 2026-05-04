@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
-const BASE = process.env.WORKER_API_URL   ?? "http://localhost:3002";
+const BASE  = process.env.WORKER_API_URL   ?? "http://localhost:3002";
 const TOKEN = process.env.WORKER_API_TOKEN ?? "";
 
-async function callWorkerApi(
+async function call(
   path: string,
-  method: "GET" | "POST" = "POST"
+  method: "GET" | "POST" = "POST",
 ): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
     const res = await fetch(`${BASE}${path}`, {
@@ -26,24 +26,44 @@ async function callWorkerApi(
   }
 }
 
+export type WorkerId = "sync" | "r1" | "r2" | "r3";
+
+/** Récupère l'état de tous les workers. */
 export async function getWorkerStatusAction() {
-  return callWorkerApi("/status", "GET");
+  return call("/status", "GET");
 }
 
-export async function triggerTickAction() {
-  const result = await callWorkerApi("/tick");
+/** Force un tick immédiat sur un worker spécifique. */
+export async function triggerTickAction(workerId: WorkerId) {
+  const result = await call(`/workers/${workerId}/tick`);
   if (result.success) revalidatePath("/worker");
   return result;
 }
 
-export async function pauseWorkerAction() {
-  const result = await callWorkerApi("/pause");
+/** Met en pause un worker spécifique. */
+export async function pauseWorkerAction(workerId: WorkerId) {
+  const result = await call(`/workers/${workerId}/pause`);
   if (result.success) revalidatePath("/worker");
   return result;
 }
 
-export async function resumeWorkerAction() {
-  const result = await callWorkerApi("/resume");
+/** Reprend un worker spécifique. */
+export async function resumeWorkerAction(workerId: WorkerId) {
+  const result = await call(`/workers/${workerId}/resume`);
+  if (result.success) revalidatePath("/worker");
+  return result;
+}
+
+/** Met tous les workers en pause. */
+export async function pauseAllAction() {
+  const result = await call("/pause-all");
+  if (result.success) revalidatePath("/worker");
+  return result;
+}
+
+/** Reprend tous les workers. */
+export async function resumeAllAction() {
+  const result = await call("/resume-all");
   if (result.success) revalidatePath("/worker");
   return result;
 }

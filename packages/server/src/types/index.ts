@@ -6,9 +6,11 @@ export const TransportType = {
 export type TransportType = (typeof TransportType)[keyof typeof TransportType];
 
 export const QuotationStatus = {
-  ACTIVE: "ACTIVE",
-  CANCELLED: "CANCELLED",
-  COMPLETED: "COMPLETED",
+  ACTIVE:     "ACTIVE",
+  CANCELLED:  "CANCELLED",
+  COMPLETED:  "COMPLETED",  // client a répondu (disparu de BrainOpx)
+  CLOSED:     "CLOSED",     // 3 relances envoyées sans réponse
+  PROCESSING: "PROCESSING", // verrou temporaire pendant l'envoi
 } as const;
 export type QuotationStatus = (typeof QuotationStatus)[keyof typeof QuotationStatus];
 

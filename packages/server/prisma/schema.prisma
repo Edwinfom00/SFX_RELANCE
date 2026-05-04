@@ -124,7 +124,7 @@ model EmailTemplate {
 
   emailLogs EmailLog[]
 
-  @@unique([transportType, reminderNumber])
+  @@unique([transportType, reminderNumber], name: "email_templates_transport_reminder_unique")
   @@map("email_templates")
 }
 
@@ -133,6 +133,9 @@ model WorkerConfig {
 
   id Int @id @default(autoincrement())
   intervalMinutes Int @default(30) @map("interval_minutes")
+  intervalR1      Int @default(30) @map("interval_r1")
+  intervalR2      Int @default(30) @map("interval_r2")
+  intervalR3      Int @default(60) @map("interval_r3")
   sendWindowStart Int @default(8) @map("send_window_start")
   sendWindowEnd Int @default(19) @map("send_window_end")
   activeDays String @default("[1,2,3,4,5]") @map("active_days")

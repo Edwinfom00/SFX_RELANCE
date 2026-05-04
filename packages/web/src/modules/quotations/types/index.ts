@@ -1,5 +1,5 @@
-export type TransportType = "AIR" | "SEA" | "ROAD";
-export type QuotationStatus = "ACTIVE" | "CANCELLED" | "COMPLETED";
+export type TransportType    = "AIR" | "SEA" | "ROAD";
+export type QuotationStatus  = "ACTIVE" | "CANCELLED" | "COMPLETED" | "CLOSED" | "PROCESSING";
 
 export interface Quotation {
   id: number;
@@ -22,4 +22,7 @@ export interface QuotationFilters {
   status?: QuotationStatus;
   transportType?: TransportType;
   search?: string;
+  reminder?: number;
+  dateFrom?: string;
+  dateTo?: string;
 }

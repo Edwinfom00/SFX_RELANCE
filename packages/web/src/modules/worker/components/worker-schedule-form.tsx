@@ -23,6 +23,9 @@ interface WorkerScheduleFormProps {
 export function WorkerScheduleForm({ config }: WorkerScheduleFormProps) {
   const [isPending, startTransition] = useTransition();
   const [intervalMinutes, setIntervalMinutes] = useState(config.intervalMinutes);
+  const [intervalR1, setIntervalR1] = useState(config.intervalR1 ?? 30);
+  const [intervalR2, setIntervalR2] = useState(config.intervalR2 ?? 30);
+  const [intervalR3, setIntervalR3] = useState(config.intervalR3 ?? 60);
   const [windowStart, setWindowStart] = useState(config.sendWindowStart);
   const [windowEnd, setWindowEnd] = useState(config.sendWindowEnd);
   const [activeDays, setActiveDays] = useState<number[]>(config.activeDays);
@@ -48,6 +51,9 @@ export function WorkerScheduleForm({ config }: WorkerScheduleFormProps) {
     startTransition(async () => {
       await updateWorkerConfigAction({
         intervalMinutes,
+        intervalR1,
+        intervalR2,
+        intervalR3,
         sendWindowStart: windowStart,
         sendWindowEnd: windowEnd,
         activeDays,
@@ -91,6 +97,34 @@ export function WorkerScheduleForm({ config }: WorkerScheduleFormProps) {
                 <div className="text-[11.5px] text-[#697386] mt-0.5">{o.sub}</div>
               </div>
             </button>
+          ))}
+        </div>
+      </SettingRow>
+
+      {/* Intervalles par worker de relance */}
+      <SettingRow
+        label="Intervalles par relance"
+        hint="Fréquence de scan indépendante pour chaque worker de relance."
+      >
+        <div className="flex flex-col gap-2.5">
+          {([
+            { label: "Worker Relance #1", value: intervalR1, onChange: setIntervalR1, color: "#0057ff" },
+            { label: "Worker Relance #2", value: intervalR2, onChange: setIntervalR2, color: "#7c4dff" },
+            { label: "Worker Relance #3", value: intervalR3, onChange: setIntervalR3, color: "#cd3d64" },
+          ] as const).map((w) => (
+            <div key={w.label} className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 w-[160px]">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: w.color }} />
+                <span className="text-[12.5px] text-[#425466] font-medium">{w.label}</span>
+              </div>
+              <NumberInputWithSuffix
+                value={w.value}
+                onChange={w.onChange}
+                suffix="minutes"
+                min={5}
+                max={1440}
+              />
+            </div>
           ))}
         </div>
       </SettingRow>

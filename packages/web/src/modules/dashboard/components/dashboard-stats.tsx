@@ -75,10 +75,11 @@ export async function DashboardStats({ period = 30 }: { period?: number; stats?:
   const sentDelta = pctDelta(current.emailsSentToday, prevSent);
   const failedDelta = pctDelta(current.emailsFailed, prevFailed);
 
-  // Taux de réponse = completed / (active + completed)
-  const totalTracked = current.totalActive + current.totalCompleted;
-  const responseRate = totalTracked > 0
-    ? `${Math.round((current.totalCompleted / totalTracked) * 100)}%`
+  // Taux de réponse = COMPLETED (client a répondu) / (COMPLETED + CLOSED)
+  // CLOSED = 3 relances sans réponse — ne compte PAS comme réponse
+  const totalFinished = current.totalCompleted + current.totalClosed;
+  const responseRate = totalFinished > 0
+    ? `${Math.round((current.totalCompleted / totalFinished) * 100)}%`
     : "—";
 
   const periodLabel = PERIOD_LABEL[period] ?? `${period}j`;

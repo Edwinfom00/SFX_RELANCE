@@ -5,6 +5,9 @@ interface QuotationsPageProps {
     status?: string;
     transportType?: string;
     search?: string;
+    reminder?: string;
+    dateFrom?: string;
+    dateTo?: string;
   }>;
 }
 

@@ -6,9 +6,12 @@ export interface ReminderScheduleEntry {
 export interface WorkerConfig {
   id: number;
   intervalMinutes: number;
+  intervalR1: number;
+  intervalR2: number;
+  intervalR3: number;
   sendWindowStart: number;
   sendWindowEnd: number;
-  activeDays: number[]; // 1=lundi … 7=dimanche
+  activeDays: number[];
   sendDelaySeconds: number;
   cadenceAir: ReminderScheduleEntry[];
   cadenceSea: ReminderScheduleEntry[];
@@ -25,7 +28,8 @@ export interface WorkerConfig {
 
 export interface WorkerStats {
   totalActive: number;
-  totalCompleted: number;
+  totalCompleted: number;  // client a répondu
+  totalClosed: number;     // 3 relances sans réponse
   emailsSentToday: number;
   emailsFailedTotal: number;
   pendingReminders: number;

@@ -5,17 +5,18 @@ export async function getDashboardStats(days = 30) {
   since.setDate(since.getDate() - days);
   since.setHours(0, 0, 0, 0);
 
-  const [totalActive, totalCompleted, totalCancelled, emailsSentPeriod, emailsFailed, pendingReminders] =
+  const [totalActive, totalCompleted, totalClosed, totalCancelled, emailsSentPeriod, emailsFailed, pendingReminders] =
     await Promise.all([
       prisma.quotation.count({ where: { status: "ACTIVE" } }),
-      prisma.quotation.count({ where: { status: "COMPLETED" } }),
+      prisma.quotation.count({ where: { status: "COMPLETED" } }), // client a répondu
+      prisma.quotation.count({ where: { status: "CLOSED" } }),    // 3 relances sans réponse
       prisma.quotation.count({ where: { status: "CANCELLED" } }),
       prisma.emailLog.count({ where: { status: "SENT", sentAt: { gte: since } } }),
       prisma.emailLog.count({ where: { status: "FAILED", createdAt: { gte: since } } }),
       prisma.quotation.count({ where: { status: "ACTIVE", nextReminderAt: { lte: new Date() } } }),
     ]);
 
-  return { totalActive, totalCompleted, totalCancelled, emailsSentToday: emailsSentPeriod, emailsFailed, pendingReminders };
+  return { totalActive, totalCompleted, totalClosed, totalCancelled, emailsSentToday: emailsSentPeriod, emailsFailed, pendingReminders };
 }
 
 
@@ -24,19 +25,20 @@ export async function getDailyActivity(days = 30) {
   since.setDate(since.getDate() - (days - 1));
   since.setHours(0, 0, 0, 0);
 
-  const [sentLogs, completedQuotations] = await Promise.all([
+  const [sentLogs, respondedQuotations] = await Promise.all([
     prisma.emailLog.findMany({
       where: { status: "SENT", sentAt: { gte: since } },
       select: { sentAt: true },
     }),
+    // COMPLETED = client a répondu — c'est ça le vrai taux de réponse
     prisma.quotation.findMany({
       where: { status: "COMPLETED", updatedAt: { gte: since } },
       select: { updatedAt: true },
     }),
   ]);
 
-  const sentByDay = new Array(days).fill(0);
-  const completedByDay = new Array(days).fill(0);
+  const sentByDay      = new Array(days).fill(0);
+  const respondedByDay = new Array(days).fill(0);
   const now = Date.now();
 
   for (const log of sentLogs) {
@@ -45,23 +47,22 @@ export async function getDailyActivity(days = 30) {
     const idx = (days - 1) - daysAgo;
     if (idx >= 0 && idx < days) sentByDay[idx]++;
   }
-  for (const q of completedQuotations) {
+  for (const q of respondedQuotations) {
     const daysAgo = Math.floor((now - new Date(q.updatedAt).getTime()) / 86400000);
     const idx = (days - 1) - daysAgo;
-    if (idx >= 0 && idx < days) completedByDay[idx]++;
+    if (idx >= 0 && idx < days) respondedByDay[idx]++;
   }
 
-  // Sous-échantillonner pour le graphe (~10 points max)
   const step = Math.max(1, Math.floor(days / 10));
-  const sampledSent = sentByDay.filter((_, i) => i % step === 0);
-  const sampledCompleted = completedByDay.filter((_, i) => i % step === 0);
+  const sampledSent      = sentByDay.filter((_, i) => i % step === 0);
+  const sampledResponded = respondedByDay.filter((_, i) => i % step === 0);
   const labels = sampledSent.map((_, i) => String(i * step + 1));
 
   return {
-    sentByDay: sampledSent,
-    completedByDay: sampledCompleted,
-    totalSent: sentLogs.length,
-    totalCompleted: completedQuotations.length,
+    sentByDay:      sampledSent,
+    completedByDay: sampledResponded, // renommé pour compatibilité avec les charts
+    totalSent:      sentLogs.length,
+    totalCompleted: respondedQuotations.length,
     labels,
   };
 }
@@ -86,32 +87,34 @@ export async function getResponseRateByTransport(days = 30) {
   const since = new Date();
   since.setDate(since.getDate() - days);
 
-  const [sent, completed] = await Promise.all([
+  const [sent, responded] = await Promise.all([
     prisma.emailLog.findMany({
       where: { status: "SENT", sentAt: { gte: since } },
       include: { quotation: { select: { transportType: true } } },
     }),
+    // COMPLETED = client a répondu (disparu de BrainOpx)
+    // CLOSED = 3 relances sans réponse — ne compte PAS comme réponse
     prisma.quotation.findMany({
       where: { status: "COMPLETED", updatedAt: { gte: since } },
       select: { transportType: true },
     }),
   ]);
 
-  const sentCount: Record<string, number> = { AIR: 0, SEA: 0, ROAD: 0 };
-  const completedCount: Record<string, number> = { AIR: 0, SEA: 0, ROAD: 0 };
+  const sentCount: Record<string, number>      = { AIR: 0, SEA: 0, ROAD: 0 };
+  const respondedCount: Record<string, number> = { AIR: 0, SEA: 0, ROAD: 0 };
 
   for (const log of sent) {
     const t = log.quotation?.transportType ?? "AIR";
     sentCount[t] = (sentCount[t] ?? 0) + 1;
   }
-  for (const q of completed) {
-    completedCount[q.transportType] = (completedCount[q.transportType] ?? 0) + 1;
+  for (const q of responded) {
+    respondedCount[q.transportType] = (respondedCount[q.transportType] ?? 0) + 1;
   }
 
   const rate = (t: string) => {
     const s = sentCount[t] ?? 0;
-    const c = completedCount[t] ?? 0;
-    return s > 0 ? Math.round((c / s) * 100) : 0;
+    const r = respondedCount[t] ?? 0;
+    return s > 0 ? Math.round((r / s) * 100) : 0;
   };
 
   return { AIR: rate("AIR"), SEA: rate("SEA"), ROAD: rate("ROAD") };

@@ -109,9 +109,11 @@ export function Pill({ children, tone = "neutral", size = "sm", className }: Pil
 
 export function QuotationStatusPill({ status }: { status: string }) {
   const map: Record<string, { tone: PillTone; label: string }> = {
-    ACTIVE:    { tone: "blue",    label: "Actif" },
-    COMPLETED: { tone: "green",   label: "Terminé" },
-    CANCELLED: { tone: "neutral", label: "Annulé" },
+    ACTIVE:     { tone: "blue",    label: "Actif" },
+    COMPLETED:  { tone: "green",   label: "Client a répondu" },
+    CLOSED:     { tone: "neutral", label: "Clôturé sans réponse" },
+    CANCELLED:  { tone: "neutral", label: "Annulé" },
+    PROCESSING: { tone: "amber",   label: "En cours…" },
   };
   const cfg = map[status] ?? { tone: "neutral", label: status };
   return <Pill tone={cfg.tone}>{cfg.label}</Pill>;

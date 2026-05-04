@@ -9,6 +9,9 @@ interface QuotationsViewProps {
     status?: string;
     transportType?: string;
     search?: string;
+    reminder?: string;
+    dateFrom?: string;
+    dateTo?: string;
   };
 }
 
@@ -30,9 +33,12 @@ function QuotationsTableSkeleton() {
 
 export function QuotationsView({ searchParams = {} }: QuotationsViewProps) {
   const filters: QuotationFilters = {
-    ...(searchParams.status && { status: searchParams.status as any }),
+    ...(searchParams.status        && { status:        searchParams.status as any }),
     ...(searchParams.transportType && { transportType: searchParams.transportType as any }),
-    ...(searchParams.search && { search: searchParams.search }),
+    ...(searchParams.search        && { search:        searchParams.search }),
+    ...(searchParams.reminder      && { reminder:      Number(searchParams.reminder) }),
+    ...(searchParams.dateFrom      && { dateFrom:      searchParams.dateFrom }),
+    ...(searchParams.dateTo        && { dateTo:        searchParams.dateTo }),
   };
 
   return (

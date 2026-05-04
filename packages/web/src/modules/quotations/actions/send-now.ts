@@ -102,7 +102,7 @@ export async function sendReminderNowAction(
           where: { id: quotation.id },
           data: {
             currentReminder: nextReminderNumber,
-            status:          nextReminderNumber === 3 ? "COMPLETED" : "ACTIVE",
+            status:          nextReminderNumber === 3 ? "CLOSED" : "ACTIVE",
             nextReminderAt:  nextSchedule
               ? new Date(new Date(quotation.transmissionDate).getTime() + nextSchedule.delayHours * 3600000)
               : null,

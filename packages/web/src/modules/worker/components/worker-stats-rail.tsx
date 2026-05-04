@@ -14,11 +14,11 @@ export async function WorkerStatsRail() {
   const cpuData = [1.2, 2.1, 1.8, 4.5, 2.3, 1.9, 2.0, 3.2, 2.8, 2.4, 2.5, 2.4];
 
   const statRows = [
-    { l: "Cotations actives",    v: String(stats.totalActive),       color: undefined },
-    { l: "Cotations terminées",  v: String(stats.totalCompleted),     color: undefined },
-    { l: "Relances envoyées (aujourd'hui)", v: String(stats.emailsSentToday), color: undefined },
-    { l: "Clients ayant répondu", v: String(stats.totalCompleted),   color: "#0e9f6e" },
-    { l: "Erreurs totales",      v: String(stats.emailsFailedTotal),  color: stats.emailsFailedTotal > 0 ? "#cd3d64" : "#0e9f6e" },
+    { l: "Cotations actives",          v: String(stats.totalActive),       color: undefined },
+    { l: "Clients ayant répondu",      v: String(stats.totalCompleted),    color: "#0e9f6e" },
+    { l: "Clôturées sans réponse",     v: String(stats.totalClosed ?? 0),  color: "#697386" },
+    { l: "Relances envoyées (auj.)",   v: String(stats.emailsSentToday),   color: undefined },
+    { l: "Erreurs totales",            v: String(stats.emailsFailedTotal),  color: stats.emailsFailedTotal > 0 ? "#cd3d64" : "#0e9f6e" },
   ];
 
   // Build log lines for the terminal

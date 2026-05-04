@@ -118,7 +118,6 @@ export default async function QuotationDetailPage({ params }: { params: Promise<
           <span className="text-[#0a2540] font-[550]">{quotation.quotationId}</span>
         </div>
         <div className="flex gap-2">
-          <SfxButton variant="secondary" size="sm" icon={ExternalLink}>Voir dans Brainvape</SfxButton>
           {isActive && <CancelDialog quotationId={quotation.id} quotationRef={quotation.quotationId} />}
           {isActive && quotation.currentReminder < 3 && (
             <SendNowDialog
@@ -151,7 +150,9 @@ export default async function QuotationDetailPage({ params }: { params: Promise<
                   Prochaine dans {formatDistanceToNow(new Date(quotation.nextReminderAt), { locale: fr })}
                 </Pill>
               )}
-              {!isActive && <Pill tone={quotation.status === "COMPLETED" ? "green" : "neutral"}>{quotation.status === "COMPLETED" ? "Terminé" : "Annulé"}</Pill>}
+              {!isActive && <Pill tone={quotation.status === "COMPLETED" ? "green" : quotation.status === "CLOSED" ? "neutral" : "neutral"}>
+                {quotation.status === "COMPLETED" ? "Client a répondu" : quotation.status === "CLOSED" ? "Clôturé sans réponse" : "Annulé"}
+              </Pill>}
             </div>
             <h2 className="text-[22px] font-semibold tracking-[-0.02em] m-0 text-[#0a2540]">
               {quotation.libelle || quotation.clientCode}

@@ -5,7 +5,7 @@ export const cancelQuotationSchema = z.object({
 });
 
 export const quotationFiltersSchema = z.object({
-  status: z.enum(["ACTIVE", "CANCELLED", "COMPLETED"]).optional(),
+  status: z.enum(["ACTIVE", "CANCELLED", "COMPLETED", "CLOSED"]).optional(),
   transportType: z.enum(["AIR", "SEA", "ROAD"]).optional(),
   search: z.string().optional(),
 });

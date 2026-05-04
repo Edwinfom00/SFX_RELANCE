@@ -4,23 +4,26 @@ import type { WorkerConfig, WorkerStats } from "../types";
 
 function parseConfig(raw: any): WorkerConfig {
   return {
-    id: raw.id,
+    id:              raw.id,
     intervalMinutes: raw.intervalMinutes,
+    intervalR1:      raw.intervalR1 ?? 30,
+    intervalR2:      raw.intervalR2 ?? 30,
+    intervalR3:      raw.intervalR3 ?? 60,
     sendWindowStart: raw.sendWindowStart,
-    sendWindowEnd: raw.sendWindowEnd,
-    activeDays: JSON.parse(raw.activeDays),
+    sendWindowEnd:   raw.sendWindowEnd,
+    activeDays:      JSON.parse(raw.activeDays),
     sendDelaySeconds: raw.sendDelaySeconds,
-    cadenceAir: JSON.parse(raw.cadenceAir),
-    cadenceSea: JSON.parse(raw.cadenceSea),
-    cadenceRoad: JSON.parse(raw.cadenceRoad),
-    smtpHost: raw.smtpHost,
-    smtpPort: raw.smtpPort,
-    smtpSecure: raw.smtpSecure,
-    smtpUser: raw.smtpUser,
-    smtpPass: raw.smtpPass ? "••••••••" : "", // jamais exposé en clair côté client
-    smtpFrom: raw.smtpFrom,
-    timezone: raw.timezone ?? "Africa/Douala",
-    updatedAt: raw.updatedAt,
+    cadenceAir:      JSON.parse(raw.cadenceAir),
+    cadenceSea:      JSON.parse(raw.cadenceSea),
+    cadenceRoad:     JSON.parse(raw.cadenceRoad),
+    smtpHost:        raw.smtpHost,
+    smtpPort:        raw.smtpPort,
+    smtpSecure:      raw.smtpSecure,
+    smtpUser:        raw.smtpUser,
+    smtpPass:        raw.smtpPass ? "••••••••" : "",
+    smtpFrom:        raw.smtpFrom,
+    timezone:        raw.timezone ?? "Africa/Douala",
+    updatedAt:       raw.updatedAt,
   };
 }
 
@@ -51,6 +54,9 @@ export async function getWorkerConfig(): Promise<WorkerConfig> {
 
 export interface UpdateWorkerConfigInput {
   intervalMinutes?: number;
+  intervalR1?: number;
+  intervalR2?: number;
+  intervalR3?: number;
   sendWindowStart?: number;
   sendWindowEnd?: number;
   activeDays?: number[];
@@ -62,7 +68,7 @@ export interface UpdateWorkerConfigInput {
   smtpPort?: number;
   smtpSecure?: boolean;
   smtpUser?: string;
-  smtpPass?: string; // en clair — sera chiffré avant stockage
+  smtpPass?: string;
   smtpFrom?: string;
   timezone?: string;
 }
@@ -73,6 +79,9 @@ export async function updateWorkerConfig(data: UpdateWorkerConfigInput): Promise
 
   const payload: Record<string, any> = {};
   if (data.intervalMinutes !== undefined) payload.intervalMinutes = data.intervalMinutes;
+  if (data.intervalR1      !== undefined) payload.intervalR1      = data.intervalR1;
+  if (data.intervalR2      !== undefined) payload.intervalR2      = data.intervalR2;
+  if (data.intervalR3      !== undefined) payload.intervalR3      = data.intervalR3;
   if (data.sendWindowStart !== undefined) payload.sendWindowStart = data.sendWindowStart;
   if (data.sendWindowEnd !== undefined) payload.sendWindowEnd = data.sendWindowEnd;
   if (data.activeDays !== undefined) payload.activeDays = JSON.stringify(data.activeDays);
@@ -119,10 +128,11 @@ export async function getWorkerStats(): Promise<WorkerStats> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [totalActive, totalCompleted, emailsSentToday, emailsFailedTotal, pendingReminders, lastLog] =
+  const [totalActive, totalCompleted, totalClosed, emailsSentToday, emailsFailedTotal, pendingReminders, lastLog] =
     await Promise.all([
       prisma.quotation.count({ where: { status: "ACTIVE" } }),
       prisma.quotation.count({ where: { status: "COMPLETED" } }),
+      prisma.quotation.count({ where: { status: "CLOSED" } }),
       prisma.emailLog.count({ where: { status: "SENT", sentAt: { gte: today } } }),
       prisma.emailLog.count({ where: { status: "FAILED" } }),
       prisma.quotation.count({ where: { status: "ACTIVE", nextReminderAt: { lte: new Date() } } }),
@@ -132,11 +142,12 @@ export async function getWorkerStats(): Promise<WorkerStats> {
   return {
     totalActive,
     totalCompleted,
+    totalClosed,
     emailsSentToday,
     emailsFailedTotal,
     pendingReminders,
     lastRunAt: lastLog?.createdAt ?? null,
-    nextRunAt: null, // calculé côté client depuis intervalMinutes
+    nextRunAt: null,
   };
 }
 
