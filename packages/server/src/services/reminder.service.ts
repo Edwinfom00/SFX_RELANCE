@@ -2,6 +2,7 @@ import prisma from "../utils/prisma";
 import { sendMail } from "./mailer.service";
 import { addHours } from "../utils/date";
 import { parseRecipientEmails } from "../utils/email";
+import { findQuotationPdf } from "../utils/pdf";
 import { MAX_RETRY } from "../config/reminder.config";
 import type { TransportType } from "../types";
 
@@ -206,21 +207,38 @@ async function sendReminder(
 
   let success  = false;
   let errorMsg: string | undefined;
+  const attachments: Array<{ filename: string; path: string }> = [];
 
-  const { to, cc } = parseRecipientEmails(quotation.clientEmail);
+  const pdfSearchResult = findQuotationPdf(
+    quotation.quotationId,
+    quotation.paysCode,
+    quotation.agenceCode
+  );
 
-  for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
-    try {
-      await sendMail({ to, cc: cc || undefined, subject, html });
-      success = true;
-      break;
-    } catch (err) {
-      errorMsg = err instanceof Error ? err.message : String(err);
-      if (attempt < MAX_RETRY) {
-        await prisma.emailLog.update({
-          where: { id: log.id },
-          data:  { status: "RETRIED", retryCount: attempt + 1 },
-        });
+  if (pdfSearchResult.error) {
+    errorMsg = pdfSearchResult.errorDetails;
+    console.warn(`${tag} Relance annulée pour ${quotation.quotationId} : ${errorMsg}`);
+  } else if (pdfSearchResult.filePath) {
+    attachments.push({
+      filename: require("path").basename(pdfSearchResult.filePath),
+      path: pdfSearchResult.filePath,
+    });
+
+    const { to, cc } = parseRecipientEmails(quotation.clientEmail);
+
+    for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
+      try {
+        await sendMail({ to, cc: cc || undefined, subject, html, attachments });
+        success = true;
+        break;
+      } catch (err) {
+        errorMsg = err instanceof Error ? err.message : String(err);
+        if (attempt < MAX_RETRY) {
+          await prisma.emailLog.update({
+            where: { id: log.id },
+            data:  { status: "RETRIED", retryCount: attempt + 1 },
+          });
+        }
       }
     }
   }

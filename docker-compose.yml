@@ -17,6 +17,8 @@ services:
       - sfx-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - ./packages/server/test-pdfs:/app/pdf-storage
 
   web:
     build:
@@ -38,6 +40,8 @@ services:
       - sfx-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - ./packages/server/test-pdfs:/app/pdf-storage
 
 networks:
   sfx-network:

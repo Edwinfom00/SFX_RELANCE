@@ -83,6 +83,8 @@ model Quotation {
   nextReminderAt   DateTime? @map("next_reminder_at")
   cancelledById    Int?      @map("cancelled_by")
   cancelledAt      DateTime? @map("cancelled_at")
+  paysCode         String    @default("CMR") @map("pays_code")
+  agenceCode       String    @default("DLA") @map("agence_code")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 

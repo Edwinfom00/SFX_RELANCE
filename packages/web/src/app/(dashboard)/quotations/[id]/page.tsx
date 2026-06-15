@@ -5,7 +5,7 @@ import { fr } from "date-fns/locale";
 import { ChevronRight, Plane, Ship, Truck, Check, ExternalLink } from "lucide-react";
 import { TransportBadge, Pill, SfxCard, SfxButton, ReminderSteps } from "@/components/sfx-ui";
 import { CancelDialog } from "@/modules/quotations/components/cancel-dialog";
-import { EmailPreview } from "@/modules/quotations/components/email-preview";
+import { QuotationPreviewTabs } from "@/modules/quotations/components/quotation-preview-tabs";
 import { SendNowDialog } from "@/modules/quotations/components/send-now-dialog";
 import prisma from "@/lib/prisma";
 import { parseRecipientEmails } from "@/lib/email";
@@ -307,18 +307,10 @@ export default async function QuotationDetailPage({ params }: { params: Promise<
           </div>
         </SfxCard>
 
-        {/* Email preview */}
+        {/* Email & PDF preview */}
         <SfxCard padding={false} className="overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6ebf1]">
-            <div>
-              <div className="text-sm font-semibold text-[#0a2540] tracking-tight">Aperçu de la prochaine relance</div>
-              <div className="text-xs text-[#697386] mt-0.5">
-                Relance #{nextReminderNumber} · {transportLabel[quotation.transportType]}
-                {nextTemplate && <span className="ml-1.5 text-[#8898aa]">· {nextTemplate.name}</span>}
-              </div>
-            </div>
-          </div>
-          <EmailPreview
+          <QuotationPreviewTabs
+            dbId={quotation.id}
             quotationId={quotation.quotationId}
             libelle={quotation.libelle}
             clientEmail={quotation.clientEmail}

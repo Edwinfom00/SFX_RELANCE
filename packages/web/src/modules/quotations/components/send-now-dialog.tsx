@@ -22,23 +22,34 @@ export function SendNowDialog({
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState("");
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [confirmMissingPdf, setConfirmMissingPdf] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleOpen() {
     setState("idle");
     setError("");
+    setPdfError(null);
+    setConfirmMissingPdf(false);
     setOpen(true);
   }
 
   function handleConfirm() {
     setState("loading");
     startTransition(async () => {
-      const result = await sendReminderNowAction(quotationId);
+      const result = await sendReminderNowAction(quotationId, confirmMissingPdf);
       if (result.success) {
         setState("success");
+        setPdfError(null);
       } else {
-        setState("error");
-        setError(result.error ?? "Erreur inconnue");
+        if (result.code === "NO_PDF_FOUND") {
+          setState("idle");
+          setPdfError(result.error ?? "Aucun PDF trouvé.");
+        } else {
+          setState("error");
+          setError(result.error ?? "Erreur inconnue");
+          setPdfError(null);
+        }
       }
     });
   }
@@ -109,13 +120,35 @@ export function SendNowDialog({
                     })()}
                   </div>
 
-                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-[#fff3d6] border border-[#c28b00]/20 rounded-lg">
-                    <span className="text-[#c28b00] text-[13px] shrink-0 mt-px">⚠️</span>
-                    <div className="text-[12px] text-[#425466] leading-normal">
-                      L'email sera envoyé <b className="text-[#0a2540]">immédiatement</b>.
-                      Le compteur de relances sera mis à jour et la prochaine relance replanifiée.
+                  {pdfError ? (
+                    <div className="flex flex-col gap-3 px-3.5 py-3 bg-[#ffe1e6] border border-[#cd3d64]/20 rounded-lg">
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-[#cd3d64] text-[14px] shrink-0 mt-px">⚠️</span>
+                        <div className="text-[12.5px] text-[#cd3d64] leading-normal font-medium">
+                          {pdfError}
+                        </div>
+                      </div>
+                      <label className="flex items-center gap-2.5 mt-1 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={confirmMissingPdf}
+                          onChange={(e) => setConfirmMissingPdf(e.target.checked)}
+                          className="rounded border-[#cd3d64]/40 text-[#cd3d64] focus:ring-[#cd3d64] h-4 w-4 accent-[#cd3d64]"
+                        />
+                        <span className="text-[12px] text-[#cd3d64] font-semibold">
+                          Confirmer l'envoi sans pièce jointe PDF
+                        </span>
+                      </label>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex items-start gap-2.5 px-3 py-2.5 bg-[#fff3d6] border border-[#c28b00]/20 rounded-lg">
+                      <span className="text-[#c28b00] text-[13px] shrink-0 mt-px">⚠️</span>
+                      <div className="text-[12px] text-[#425466] leading-normal">
+                        L'email sera envoyé <b className="text-[#0a2540]">immédiatement</b>.
+                        Le compteur de relances sera mis à jour et la prochaine relance replanifiée.
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -164,7 +197,13 @@ export function SendNowDialog({
                 </SfxButton>
               )}
               {state === "idle" && (
-                <SfxButton variant="primary" size="sm" icon={Send} onClick={handleConfirm} disabled={isPending}>
+                <SfxButton 
+                  variant="primary" 
+                  size="sm" 
+                  icon={Send} 
+                  onClick={handleConfirm} 
+                  disabled={isPending || (pdfError !== null && !confirmMissingPdf)}
+                >
                   Confirmer l'envoi
                 </SfxButton>
               )}

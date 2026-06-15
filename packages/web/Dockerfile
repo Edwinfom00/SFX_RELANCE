@@ -3,7 +3,7 @@ FROM node:20-alpine AS deps
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
@@ -18,7 +18,7 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
 # Copier tous les node_modules depuis deps
 COPY --from=deps /app/node_modules                 ./node_modules

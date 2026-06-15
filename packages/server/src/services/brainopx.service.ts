@@ -26,13 +26,15 @@ interface BrainOpxRow {
   client_language: string; // ex: "US", "FR", "GB"
   transmission_date: Date;
   transport_type: "AIR" | "SEA" | "ROAD";
+  pays_code: string;
+  agence_code: string;
 }
 
 
 async function fetchFromBrainOpx(): Promise<BrainOpxRow[]> {
   const db = process.env.BRAINOPX_DATABASE ?? "BopxFMT";
   return prisma.$queryRawUnsafe<BrainOpxRow[]>(`
-    SELECT quotation_id, libelle, client_code, client_email, client_language, transmission_date, transport_type
+    SELECT quotation_id, libelle, client_code, client_email, client_language, transmission_date, transport_type, pays_code, agence_code
     FROM [${db}].[dbo].[v_sfx_active_quotations]
   `);
 }
@@ -103,6 +105,8 @@ export async function syncQuotations(): Promise<void> {
         status:           "ACTIVE",
         currentReminder:  0,
         nextReminderAt:   addHours(new Date(row.transmission_date), firstDelay),
+        paysCode:         row.pays_code || "CMR",
+        agenceCode:       row.agence_code || "DLA",
       },
     });
     created++;

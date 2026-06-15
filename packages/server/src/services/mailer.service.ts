@@ -31,7 +31,13 @@ async function getTransporter(): Promise<Transporter> {
 }
 
 
-export async function sendMail(options: { to: string; cc?: string; subject: string; html: string }): Promise<void> {
+export async function sendMail(options: {
+  to: string;
+  cc?: string;
+  subject: string;
+  html: string;
+  attachments?: Array<{ filename: string; path: string }>;
+}): Promise<void> {
   const t = await getTransporter();
   const config = await prisma.workerConfig.findFirst({ select: { smtpFrom: true } });
   const from = config?.smtpFrom || process.env.SMTP_FROM || "";

@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { decrypt } from "@/lib/crypto";
 import nodemailer from "nodemailer";
 import { parseRecipientEmails } from "@/lib/email";
+import { findQuotationPdf } from "@/lib/pdf";
 
 const REMINDER_SCHEDULE: Record<string, Array<{ reminderNumber: number; delayHours: number }>> = {
   AIR:  [{ reminderNumber: 1, delayHours: 24 },  { reminderNumber: 2, delayHours: 48 },  { reminderNumber: 3, delayHours: 72 }],
@@ -32,8 +33,9 @@ function textToHtml(text: string): string {
 }
 
 export async function sendReminderNowAction(
-  quotationId: number
-): Promise<{ success: boolean; error?: string }> {
+  quotationId: number,
+  ignoreMissingPdf: boolean = false
+): Promise<{ success: boolean; error?: string; code?: string }> {
   try {
     const quotation = await prisma.quotation.findUnique({ where: { id: quotationId } });
     if (!quotation) return { success: false, error: "Cotation introuvable." };
@@ -77,6 +79,30 @@ export async function sendReminderNowAction(
     const subject = resolveVars(subjectTpl, quotation.quotationId, libelle, quotation.clientCode);
     const html    = textToHtml(resolveVars(bodyTpl,    quotation.quotationId, libelle, quotation.clientCode));
 
+    // Recherche du PDF
+    const pdfSearchResult = findQuotationPdf(
+      quotation.quotationId,
+      quotation.paysCode,
+      quotation.agenceCode
+    );
+
+    const attachments: Array<{ filename: string; path: string }> = [];
+
+    if (pdfSearchResult.error) {
+      if (!ignoreMissingPdf || pdfSearchResult.error !== "NO_PDF_FOUND") {
+        return {
+          success: false,
+          error: pdfSearchResult.errorDetails,
+          code: pdfSearchResult.error
+        };
+      }
+    } else if (pdfSearchResult.filePath) {
+      attachments.push({
+        filename: require("path").basename(pdfSearchResult.filePath),
+        path: pdfSearchResult.filePath,
+      });
+    }
+
     // Log PENDING
     const log = await prisma.emailLog.create({
       data: {
@@ -98,7 +124,7 @@ export async function sendReminderNowAction(
     const { to, cc } = parseRecipientEmails(quotation.clientEmail);
 
     try {
-      await transporter.sendMail({ from, to, cc: cc || undefined, subject, html });
+      await transporter.sendMail({ from, to, cc: cc || undefined, subject, html, attachments });
 
       const schedule = REMINDER_SCHEDULE[quotation.transportType];
       const nextSchedule = schedule?.find((s) => s.reminderNumber === nextReminderNumber + 1);
