@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { EmailPreview } from "./email-preview";
-import { FileText, Mail, Loader2, AlertTriangle } from "lucide-react";
+import { FileText, Mail, Loader2, AlertTriangle, ExternalLink } from "lucide-react";
 
 interface QuotationPreviewTabsProps {
   dbId: number;
@@ -93,38 +93,46 @@ export function QuotationPreviewTabs({
 
   return (
     <div className="flex flex-col h-full min-h-[500px]">
-      {/* Tabs Selector */}
-      <div className="flex items-center justify-between border-b border-[#e6ebf1] bg-[#fafbfc] px-5 py-2 gap-4">
-        <div className="flex gap-4">
+      {/* Premium Header with Segmented Control */}
+      <div className="px-5 py-4 border-b border-[#e6ebf1] bg-[#fafbfc] flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-[#0a2540] tracking-tight">Aperçu de la relance</div>
+          <div 
+            className="text-xs text-[#697386] mt-0.5 max-w-[180px] sm:max-w-[280px] md:max-w-[360px] truncate" 
+            title={template ? `Relance #${nextReminderNumber} · ${template.name}` : `Relance #${nextReminderNumber}`}
+          >
+            Relance #{nextReminderNumber} {template && `· ${template.name}`}
+          </div>
+        </div>
+
+        {/* Segmented Control Switcher */}
+        <div className="flex bg-[#f1f3f5] p-0.5 rounded-lg border border-[#e6ebf1] gap-0.5 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("email")}
-            className="flex items-center gap-2 px-1 py-2 text-[13px] font-[550] transition-colors border-b-2"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-[550] rounded-md transition-all duration-200"
             style={{
-              borderColor: activeTab === "email" ? "#0057ff" : "transparent",
+              background: activeTab === "email" ? "#fff" : "transparent",
               color: activeTab === "email" ? "#0057ff" : "#697386",
+              boxShadow: activeTab === "email" ? "0 1px 2.5px rgba(10,37,64,0.06)" : "none",
             }}
           >
-            <Mail className="h-4 w-4" />
-            Aperçu de l'email
+            <Mail className="h-3.5 w-3.5" />
+            Email
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("pdf")}
-            className="flex items-center gap-2 px-1 py-2 text-[13px] font-[550] transition-colors border-b-2"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-[550] rounded-md transition-all duration-200"
             style={{
-              borderColor: activeTab === "pdf" ? "#0057ff" : "transparent",
+              background: activeTab === "pdf" ? "#fff" : "transparent",
               color: activeTab === "pdf" ? "#0057ff" : "#697386",
+              boxShadow: activeTab === "pdf" ? "0 1px 2.5px rgba(10,37,64,0.06)" : "none",
             }}
           >
-            <FileText className="h-4 w-4" />
-            Pièce jointe PDF
+            <FileText className="h-3.5 w-3.5" />
+            PDF
           </button>
-        </div>
-
-        <div className="text-[12px] text-[#697386] font-medium hidden sm:block">
-          Relance #{nextReminderNumber}
-          {template && <span className="ml-1.5 text-[#8898aa]">· {template.name}</span>}
         </div>
       </div>
 
@@ -144,27 +152,27 @@ export function QuotationPreviewTabs({
         ) : (
           <div className="h-full flex flex-col min-h-[400px]">
             {pdfState.loading && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-2.5 py-12">
+              <div className="flex-1 flex flex-col items-center justify-center gap-2.5 py-16">
                 <Loader2 className="h-6 w-6 text-[#0057ff] animate-spin" />
                 <span className="text-[13px] text-[#697386]">Recherche du document PDF...</span>
               </div>
             )}
 
             {!pdfState.loading && pdfState.exists === false && (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-md mx-auto gap-4">
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-sm mx-auto gap-4">
                 <div className="w-12 h-12 rounded-full bg-[#ffe1e6] flex items-center justify-center text-[#cd3d64]">
-                  <AlertTriangle className="h-6 w-6" />
+                  <AlertTriangle className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-[14px] font-semibold text-[#0a2540] mb-1">
+                  <h4 className="text-[13.5px] font-semibold text-[#0a2540] mb-1">
                     Document PDF non disponible
                   </h4>
-                  <p className="text-[12.5px] text-[#697386] leading-relaxed">
+                  <p className="text-[12px] text-[#697386] leading-relaxed">
                     {pdfState.errorDetails}
                   </p>
                 </div>
-                <div className="text-[11.5px] text-[#8898aa] bg-[#fafbfc] border border-[#e6ebf1] rounded-md px-3 py-2 font-mono">
-                  Quotation ID: {quotationId}
+                <div className="text-[11px] text-[#8898aa] bg-[#fafbfc] border border-[#e6ebf1] rounded-md px-3 py-1.5 font-mono">
+                  Réf : {quotationId}
                 </div>
               </div>
             )}
@@ -172,21 +180,23 @@ export function QuotationPreviewTabs({
             {!pdfState.loading && pdfState.exists === true && (
               <div className="flex-1 flex flex-col h-full bg-[#fafbfc]">
                 {/* PDF Toolbar */}
-                <div className="bg-white border-b border-[#e6ebf1] px-5 py-2.5 flex items-center justify-between text-[12px] text-[#697386]">
-                  <div className="flex items-center gap-2 font-medium">
-                    <span className="text-[#0a2540] font-semibold">{pdfState.fileName}</span>
+                <div className="bg-white border-b border-[#e6ebf1] px-5 py-2.5 flex items-center justify-between text-[12px]">
+                  <div className="flex items-center gap-2 text-[#425466]">
+                    <FileText className="h-4 w-4 text-[#8898aa]" />
+                    <span className="text-[#0a2540] font-semibold truncate max-w-[200px] sm:max-w-xs">{pdfState.fileName}</span>
                   </div>
                   <a
                     href={`/api/quotations/${dbId}/pdf`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#0057ff] hover:underline font-semibold flex items-center gap-1"
+                    className="text-[#0057ff] hover:text-[#0044cc] font-semibold flex items-center gap-1 transition-colors"
                   >
-                    Ouvrir dans un nouvel onglet ↗
+                    Ouvrir dans un nouvel onglet
+                    <ExternalLink className="h-3 w-3" />
                   </a>
                 </div>
                 {/* PDF Viewer Frame */}
-                <div className="flex-1 w-full h-[500px]">
+                <div className="flex-1 w-full h-[520px]">
                   <iframe
                     src={`/api/quotations/${dbId}/pdf`}
                     className="w-full h-full border-0"

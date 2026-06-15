@@ -115,11 +115,14 @@ export async function sendReminderNowAction(
     });
 
     // Envoi
-    const transporter = nodemailer.createTransport({
+    const transportOpts: any = {
       host, port, secure,
-      auth: { user, pass },
       tls: { rejectUnauthorized: false },
-    } as any);
+    };
+    if (user && pass) {
+      transportOpts.auth = { user, pass };
+    }
+    const transporter = nodemailer.createTransport(transportOpts);
 
     const { to, cc } = parseRecipientEmails(quotation.clientEmail);
 
