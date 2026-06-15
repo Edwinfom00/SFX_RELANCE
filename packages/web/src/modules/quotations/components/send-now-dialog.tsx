@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Send, X, CheckCircle, AlertCircle, Loader } from "lucide-react";
 import { SfxButton, TransportBadge, Pill } from "@/components/sfx-ui";
 import { sendReminderNowAction } from "../actions/send-now";
+import { parseRecipientEmails } from "@/lib/email";
 
 interface SendNowDialogProps {
   quotationId: number;
@@ -85,16 +86,27 @@ export function SendNowDialog({
                       <TransportBadge type={transportType} />
                       <Pill tone="blue">{reminderLabel[nextReminderNumber] ?? `Relance #${nextReminderNumber}`}</Pill>
                     </div>
-                    <div className="grid gap-1" style={{ gridTemplateColumns: "auto 1fr" }}>
-                      <span className="text-[11.5px] text-[#8898aa] font-semibold">Destinataire</span>
-                      <span className="text-[12px] text-[#0a2540] font-mono">{clientEmail}</span>
-                      {templateName && (
-                        <>
-                          <span className="text-[11.5px] text-[#8898aa] font-semibold">Template</span>
-                          <span className="text-[12px] text-[#425466]">{templateName}</span>
-                        </>
-                      )}
-                    </div>
+                    {(() => {
+                      const { to, cc } = parseRecipientEmails(clientEmail);
+                      return (
+                        <div className="grid gap-1" style={{ gridTemplateColumns: "auto 1fr" }}>
+                          <span className="text-[11.5px] text-[#8898aa] font-semibold">Destinataire</span>
+                          <span className="text-[12px] text-[#0a2540] font-mono">{to}</span>
+                          {cc && (
+                            <>
+                              <span className="text-[11.5px] text-[#8898aa] font-semibold">Cc</span>
+                              <span className="text-[12px] text-[#0a2540] font-mono">{cc}</span>
+                            </>
+                          )}
+                          {templateName && (
+                            <>
+                              <span className="text-[11.5px] text-[#8898aa] font-semibold">Template</span>
+                              <span className="text-[12px] text-[#425466]">{templateName}</span>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   <div className="flex items-start gap-2.5 px-3 py-2.5 bg-[#fff3d6] border border-[#c28b00]/20 rounded-lg">
@@ -114,19 +126,22 @@ export function SendNowDialog({
                 </div>
               )}
 
-              {state === "success" && (
-                <div className="flex items-start gap-3 py-2">
-                  <CheckCircle className="h-5 w-5 text-[#0e9f6e] shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-[13px] font-semibold text-[#0a2540]">
-                      Relance #{nextReminderNumber} envoyée avec succès
-                    </div>
-                    <div className="text-[12px] text-[#697386] mt-0.5">
-                      Email envoyé à <b>{clientEmail}</b>. La page va se rafraîchir.
+              {state === "success" && (() => {
+                const { to, cc } = parseRecipientEmails(clientEmail);
+                return (
+                  <div className="flex items-start gap-3 py-2">
+                    <CheckCircle className="h-5 w-5 text-[#0e9f6e] shrink-0 mt-0.5" />
+                    <div>
+                      <div className="text-[13px] font-semibold text-[#0a2540]">
+                        Relance #{nextReminderNumber} envoyée avec succès
+                      </div>
+                      <div className="text-[12px] text-[#697386] mt-0.5">
+                        Email envoyé à <b>{to}</b>{cc ? ` (avec copie en Cc à ${cc})` : ""}. La page va se rafraîchir.
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {state === "error" && (
                 <div className="flex items-start gap-3 py-2">

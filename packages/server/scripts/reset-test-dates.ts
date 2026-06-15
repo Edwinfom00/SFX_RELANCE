@@ -3,12 +3,13 @@
  * et réinitialise les cotations locales pour repartir de zéro.
  *
  * Usage :
- *   npx tsx packages/server/scripts/reset-test-dates.ts
+ *   npx tsx packages/server/scripts/reset-test-dates.ts [options]
  *
  * Options :
- *   --hours <n>   Décaler la date de transmission de -N heures (défaut: 0 = maintenant)
- *   --quotation <id>  Cibler une cotation spécifique (défaut: toutes)
- *   --dry-run     Afficher sans modifier
+ *   --hours <n>        Décaler la date de transmission de -N heures (défaut: 0)
+ *   --quotation <id>   Cibler une cotation spécifique (défaut: toutes)
+ *   --dry-run          Afficher sans modifier
+ *   --list             Lister les cotations disponibles sans modifier
  */
 
 import "dotenv/config";
@@ -30,13 +31,14 @@ async function main() {
   const newDate = new Date(Date.now() - hoursBack * 3600 * 1000);
   console.log(`   Nouvelle date de transmission : ${newDate.toISOString()}`);
 
-  // ── 1. Récupérer les cotations locales ACTIVE ──────────────────────────
+  // ── 1. Récupérer TOUTES les cotations (peu importe le statut) ────────────
   const localQuotations = await prisma.quotation.findMany({
     where: {
-      status: "ACTIVE",
       ...(targetId ? { quotationId: targetId } : {}),
+      // Inclure tous les statuts sauf PROCESSING (verrou temporaire)
+      status: { not: "PROCESSING" },
     },
-    select: { id: true, quotationId: true, transportType: true, currentReminder: true },
+    select: { id: true, quotationId: true, transportType: true, currentReminder: true, status: true },
   });
 
   if (localQuotations.length === 0) {
@@ -45,9 +47,9 @@ async function main() {
     return;
   }
 
-  console.log(`\n📋 ${localQuotations.length} cotation(s) à réinitialiser :\n`);
+  console.log(`\n📋 ${localQuotations.length} cotation(s) trouvée(s) :\n`);
   for (const q of localQuotations) {
-    console.log(`   • ${q.quotationId} (${q.transportType}) — relance actuelle : #${q.currentReminder}`);
+    console.log(`   • ${q.quotationId} (${q.transportType}) — statut: ${q.status} — relances: #${q.currentReminder}`);
   }
 
   if (dryRun) {
@@ -106,6 +108,8 @@ async function main() {
         currentReminder:  0,
         status:           "ACTIVE",
         nextReminderAt,
+        cancelledAt:      null,
+        cancelledById:    null,
       },
     });
     console.log(

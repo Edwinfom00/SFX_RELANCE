@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { decrypt } from "@/lib/crypto";
 import nodemailer from "nodemailer";
+import { parseRecipientEmails } from "@/lib/email";
 
 const REMINDER_SCHEDULE: Record<string, Array<{ reminderNumber: number; delayHours: number }>> = {
   AIR:  [{ reminderNumber: 1, delayHours: 24 },  { reminderNumber: 2, delayHours: 48 },  { reminderNumber: 3, delayHours: 72 }],
@@ -94,8 +95,10 @@ export async function sendReminderNowAction(
       tls: { rejectUnauthorized: false },
     } as any);
 
+    const { to, cc } = parseRecipientEmails(quotation.clientEmail);
+
     try {
-      await transporter.sendMail({ from, to: quotation.clientEmail, subject, html });
+      await transporter.sendMail({ from, to, cc: cc || undefined, subject, html });
 
       const schedule = REMINDER_SCHEDULE[quotation.transportType];
       const nextSchedule = schedule?.find((s) => s.reminderNumber === nextReminderNumber + 1);

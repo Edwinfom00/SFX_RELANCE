@@ -51,10 +51,10 @@ export function Topbar({ title, subtitle, actions, userName = "Admin", userEmail
       {actions}
 
       {/* Notifications */}
-      <div className="relative w-8 h-8 rounded-[7px] bg-[#f6f8fa] border border-[#e6ebf1] flex items-center justify-center text-[#697386] cursor-pointer hover:bg-[#f0f2f5] transition-colors">
+      {/* <div className="relative w-8 h-8 rounded-[7px] bg-[#f6f8fa] border border-[#e6ebf1] flex items-center justify-center text-[#697386] cursor-pointer hover:bg-[#f0f2f5] transition-colors">
         <Bell className="h-3.75 w-3.75" />
         <span className="absolute top-1.5 right-1.5 w-1.75 h-1.75 bg-[#cd3d64] rounded-full border-[1.5px] border-white" />
-      </div>
+      </div> */}
 
       {/* User */}
       <DropdownMenu>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SfxButton } from "@/components/sfx-ui";
 import Link from "next/link";
+import { parseRecipientEmails } from "@/lib/email";
 
 interface EmailPreviewProps {
   quotationId: string;
@@ -88,12 +89,25 @@ export function EmailPreview({
           className="px-4 py-3 bg-[#fafbfc] border-b border-[#e6ebf1] grid gap-1.5 text-[12.5px]"
           style={{ gridTemplateColumns: "auto 1fr" }}
         >
-          <span className="font-semibold text-[#697386]">De</span>
-          <span className="text-[#0a2540]">{smtpFrom || "cotations@sfx-logistics.com"}</span>
-          <span className="font-semibold text-[#697386]">À</span>
-          <span className="text-[#0a2540]">{clientEmail}</span>
-          <span className="font-semibold text-[#697386]">Objet</span>
-          <span className="text-[#0a2540] font-semibold">{subject}</span>
+          {(() => {
+            const { to, cc } = parseRecipientEmails(clientEmail);
+            return (
+              <>
+                <span className="font-semibold text-[#697386]">De</span>
+                <span className="text-[#0a2540]">{smtpFrom || "cotations@sfx-logistics.com"}</span>
+                <span className="font-semibold text-[#697386]">À</span>
+                <span className="text-[#0a2540]">{to}</span>
+                {cc && (
+                  <>
+                    <span className="font-semibold text-[#697386]">Cc</span>
+                    <span className="text-[#0a2540]">{cc}</span>
+                  </>
+                )}
+                <span className="font-semibold text-[#697386]">Objet</span>
+                <span className="text-[#0a2540] font-semibold">{subject}</span>
+              </>
+            );
+          })()}
         </div>
 
         {/* Body */}

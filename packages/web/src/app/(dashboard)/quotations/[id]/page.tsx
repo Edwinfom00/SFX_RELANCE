@@ -8,6 +8,7 @@ import { CancelDialog } from "@/modules/quotations/components/cancel-dialog";
 import { EmailPreview } from "@/modules/quotations/components/email-preview";
 import { SendNowDialog } from "@/modules/quotations/components/send-now-dialog";
 import prisma from "@/lib/prisma";
+import { parseRecipientEmails } from "@/lib/email";
 
 async function getQuotationDetail(id: number) {
   return prisma.quotation.findUnique({
@@ -163,7 +164,19 @@ export default async function QuotationDetailPage({ params }: { params: Promise<
               <div>
                 <div className="text-[11px] text-[#8898aa] font-semibold tracking-[0.04em] uppercase mb-0.5">Contact</div>
                 <div className="text-[#0a2540] font-[550]">{quotation.clientCode}</div>
-                <div className="font-mono text-[12px]">{quotation.clientEmail}</div>
+                {(() => {
+                  const { to, cc } = parseRecipientEmails(quotation.clientEmail);
+                  return (
+                    <div className="font-mono text-[12px]">
+                      <div>{to}</div>
+                      {cc && (
+                        <div className="text-[11.5px] text-[#697386] mt-0.5 font-sans">
+                          <span className="font-semibold text-[#8898aa]">Cc :</span> {cc}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <div>
                 <div className="text-[11px] text-[#8898aa] font-semibold tracking-[0.04em] uppercase mb-0.5">Transmise</div>

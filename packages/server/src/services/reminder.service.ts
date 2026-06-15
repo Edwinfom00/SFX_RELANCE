@@ -1,6 +1,7 @@
 import prisma from "../utils/prisma";
 import { sendMail } from "./mailer.service";
 import { addHours } from "../utils/date";
+import { parseRecipientEmails } from "../utils/email";
 import { MAX_RETRY } from "../config/reminder.config";
 import type { TransportType } from "../types";
 
@@ -206,9 +207,11 @@ async function sendReminder(
   let success  = false;
   let errorMsg: string | undefined;
 
+  const { to, cc } = parseRecipientEmails(quotation.clientEmail);
+
   for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
     try {
-      await sendMail({ to: quotation.clientEmail, subject, html });
+      await sendMail({ to, cc: cc || undefined, subject, html });
       success = true;
       break;
     } catch (err) {
