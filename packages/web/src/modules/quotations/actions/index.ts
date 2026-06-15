@@ -10,3 +10,9 @@ export async function cancelQuotationAction(id: number) {
   await cancelQuotation(id, userId);
   revalidatePath("/quotations");
 }
+
+import { importQuotationsAction as importAction } from "./import";
+
+export async function importQuotationsAction(rows: any[]) {
+  return importAction(rows);
+}

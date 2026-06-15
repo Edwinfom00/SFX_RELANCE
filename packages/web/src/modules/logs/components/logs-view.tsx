@@ -1,7 +1,7 @@
 import { getLogs } from "../models";
 import { LogsTable } from "./logs-table";
 import { LogsFilters } from "./logs-filters";
-import { LogsPagination } from "./logs-pagination";
+import { SfxPagination } from "@/components/sfx-pagination";
 import type { LogFilters } from "../types";
 
 interface LogsViewProps {
@@ -37,10 +37,9 @@ export async function LogsView({ searchParams = {} }: LogsViewProps) {
       <LogsTable logs={logs as any} />
 
       {pageCount > 1 && (
-        <LogsPagination
+        <SfxPagination
           page={page}
           pageCount={pageCount}
-          status={searchParams.status}
         />
       )}
     </div>

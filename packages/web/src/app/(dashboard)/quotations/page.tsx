@@ -1,4 +1,5 @@
 import { QuotationsView } from "@/modules/quotations/components/quotations-view";
+import { ImportExcelDialog } from "@/modules/quotations/components/import-excel-dialog";
 
 interface QuotationsPageProps {
   searchParams?: Promise<{
@@ -20,6 +21,7 @@ export default async function QuotationsPage({ searchParams }: QuotationsPagePro
           <h2 className="text-[22px] font-semibold tracking-[-0.02em] m-0 text-[#0a2540]">Cotations</h2>
           <p className="text-[13px] text-[#697386] mt-1">Suivi des relances en cours</p>
         </div>
+        <ImportExcelDialog />
       </div>
       <QuotationsView searchParams={params} />
     </div>

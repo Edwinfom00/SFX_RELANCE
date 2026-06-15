@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getQuotations } from "../models";
 import { QuotationsTable } from "./quotations-table";
 import { QuotationsFilters } from "./quotations-filters";
+import { SfxPagination } from "@/components/sfx-pagination";
 import type { QuotationFilters } from "../types";
 
 interface QuotationsViewProps {
@@ -12,12 +13,25 @@ interface QuotationsViewProps {
     reminder?: string;
     dateFrom?: string;
     dateTo?: string;
+    page?: string;
   };
 }
 
-async function QuotationsList({ filters }: { filters: QuotationFilters }) {
-  const quotations = await getQuotations(filters);
-  return <QuotationsTable quotations={quotations as any} />;
+async function QuotationsList({ filters, page }: { filters: QuotationFilters; page: number }) {
+  const { quotations, total, pageCount, pageSize } = await getQuotations(filters, page);
+  return (
+    <>
+      <QuotationsTable
+        quotations={quotations as any}
+        page={page}
+        pageSize={pageSize}
+        total={total}
+      />
+      {pageCount > 1 && (
+        <SfxPagination page={page} pageCount={pageCount} />
+      )}
+    </>
+  );
 }
 
 function QuotationsTableSkeleton() {
@@ -41,11 +55,13 @@ export function QuotationsView({ searchParams = {} }: QuotationsViewProps) {
     ...(searchParams.dateTo        && { dateTo:        searchParams.dateTo }),
   };
 
+  const page = Math.max(1, Number(searchParams.page ?? 1));
+
   return (
     <div className="flex flex-col gap-3.5">
       <QuotationsFilters />
       <Suspense fallback={<QuotationsTableSkeleton />}>
-        <QuotationsList filters={filters} />
+        <QuotationsList filters={filters} page={page} />
       </Suspense>
     </div>
   );

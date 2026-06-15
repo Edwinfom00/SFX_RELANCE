@@ -26,4 +26,5 @@ export interface QuotationFilters {
   reminder?: number;
   dateFrom?: string;
   dateTo?: string;
+  page?: number;
 }

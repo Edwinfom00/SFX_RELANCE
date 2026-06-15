@@ -10,9 +10,12 @@ import type { Quotation } from "../types";
 
 interface QuotationsTableProps {
   quotations: Quotation[];
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
-export function QuotationsTable({ quotations }: QuotationsTableProps) {
+export function QuotationsTable({ quotations, page, pageSize, total }: QuotationsTableProps) {
   if (quotations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-[#8898aa] bg-white border border-[#e6ebf1] rounded-xl">
@@ -20,6 +23,9 @@ export function QuotationsTable({ quotations }: QuotationsTableProps) {
       </div>
     );
   }
+
+  const from = (page - 1) * pageSize + 1;
+  const to   = Math.min(page * pageSize, total);
 
   return (
     <div className="bg-white border border-[#e6ebf1] rounded-xl overflow-hidden sfx-shadow-sm">
@@ -126,8 +132,14 @@ export function QuotationsTable({ quotations }: QuotationsTableProps) {
       {/* Footer pagination */}
       <div className="px-4.5 py-3 border-t border-[#e6ebf1] flex items-center justify-between bg-[#fafbfc] text-[12.5px] text-[#425466]">
         <div>
-          Affichage <b className="text-[#0a2540]">1-{quotations.length}</b> sur{" "}
-          <b className="text-[#0a2540]">{quotations.length}</b>
+          {total > 0 ? (
+            <>
+              Affichage <b className="text-[#0a2540]">{from}–{to}</b> sur{" "}
+              <b className="text-[#0a2540]">{total}</b>
+            </>
+          ) : (
+            "Aucune cotation"
+          )}
         </div>
       </div>
     </div>
