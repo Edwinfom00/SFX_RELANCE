@@ -72,11 +72,14 @@ export function WorkerStatusCard() {
   const dotGlow  = unreachable ? "#ffe1e6" : allPaused ? "#fff3d6" : anyPaused ? "#fff3d6" : "#defbe6";
   const barColor = unreachable ? "#cd3d64" : "#0e9f6e";
 
+  const activeCount = Object.values(workers).filter((w) => !w.paused).length;
+  const totalCount  = Object.values(workers).length;
+
   const statusLabel = unreachable
     ? "Worker injoignable"
     : allPaused  ? "Tous en pause"
-    : anyPaused  ? "Partiellement en pause"
-    : "4 workers actifs";
+    : anyPaused  ? `${activeCount} sur ${totalCount} actifs`
+    : `${totalCount} workers actifs`;
 
   return (
     <Link href="/worker" className="block mx-3.5 mb-3.5 no-underline">

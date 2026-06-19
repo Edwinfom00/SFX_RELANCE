@@ -20,7 +20,10 @@ export async function sendSmtpTestAction(to: string): Promise<{ success: boolean
     const port   = config.smtpPort;
     const secure = config.smtpSecure;
     const user   = config.smtpUser;
-    const pass   = decrypt((config as any).smtpPass ?? "");
+    let pass   = decrypt((config as any).smtpPass ?? "");
+    if (!pass) {
+      pass = process.env.SMTP_PASS || "";
+    }
     const from   = config.smtpFrom || user;
 
     if (!host || !user || !pass) {

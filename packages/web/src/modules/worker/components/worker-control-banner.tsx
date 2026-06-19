@@ -33,10 +33,11 @@ function formatUptime(s: number): string {
   return `${m}min`;
 }
 
-const WORKER_ORDER: WorkerId[] = ["sync", "r1", "r2", "r3"];
+const WORKER_ORDER: WorkerId[] = ["sync", "client-sync", "r1", "r2", "r3"];
 
 const WORKER_COLORS: Record<WorkerId, string> = {
   sync: "#697386",
+  "client-sync": "#0e9f6e",
   r1:   "#0057ff",
   r2:   "#7c4dff",
   r3:   "#cd3d64",
@@ -130,7 +131,7 @@ export function WorkerControlBanner() {
               ? <Pill tone="red">Injoignable</Pill>
               : allPaused ? <Pill tone="amber">Tous en pause</Pill>
               : anyPaused ? <Pill tone="amber">Partiellement en pause</Pill>
-              : <Pill tone="green">4 workers actifs</Pill>
+              : <Pill tone="green">5 workers actifs</Pill>
             }
           </div>
           <div className="text-[12.5px] text-[#697386] mt-0.5">
@@ -156,9 +157,9 @@ export function WorkerControlBanner() {
         </div>
       </div>
 
-      {/* Grille des 4 workers */}
+      {/* Grille des 6 workers */}
       {isOnline && (
-        <div className="grid grid-cols-4 border-t border-[#e6ebf1]">
+        <div className="grid grid-cols-6 border-t border-[#e6ebf1]">
           {WORKER_ORDER.map((id, i) => {
             const w = workers[id];
             if (!w) return null;

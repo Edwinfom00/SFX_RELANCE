@@ -12,6 +12,7 @@ import {
   User,
   ChevronDown,
   Zap,
+  Users,
 } from "lucide-react";
 
 interface NavItem {
@@ -24,6 +25,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Tableau de bord", href: "/dashboard",  icon: LayoutDashboard },
   { label: "Cotations",       href: "/quotations",  icon: List },
+  { label: "Clients",         href: "/clients",     icon: Users },
   { label: "Templates email", href: "/templates",   icon: Mail,       permission: "templates:manage" },
   { label: "Audit / Logs",    href: "/logs",        icon: RefreshCw },
 ];

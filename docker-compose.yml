@@ -19,6 +19,7 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./packages/server/test-pdfs:/app/pdf-storage
+      - ./OMA TL - Quotations awaiting Customer Feedback.xlsx:/app/OMA TL - Quotations awaiting Customer Feedback.xlsx
 
   web:
     build:
@@ -42,6 +43,7 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./packages/server/test-pdfs:/app/pdf-storage
+      - ./OMA TL - Quotations awaiting Customer Feedback.xlsx:/app/OMA TL - Quotations awaiting Customer Feedback.xlsx
 
 networks:
   sfx-network:

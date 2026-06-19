@@ -26,7 +26,7 @@ async function call(
   }
 }
 
-export type WorkerId = "sync" | "r1" | "r2" | "r3";
+export type WorkerId = "sync" | "client-sync" | "r1" | "r2" | "r3";
 
 /** Récupère l'état de tous les workers. */
 export async function getWorkerStatusAction() {
