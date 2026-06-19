@@ -5,6 +5,7 @@ import type { WorkerConfig, WorkerStats } from "../types";
 function parseConfig(raw: any): WorkerConfig {
   return {
     id:              raw.id,
+    syncSource:      (raw.syncSource as "DB" | "EXCEL") ?? "DB",
     intervalMinutes: raw.intervalMinutes,
     intervalR1:      raw.intervalR1 ?? 30,
     intervalR2:      raw.intervalR2 ?? 30,
@@ -33,6 +34,7 @@ export async function getWorkerConfig(): Promise<WorkerConfig> {
   if (!raw) {
     raw = await prisma.workerConfig.create({
       data: {
+        syncSource: "DB",
         intervalMinutes: 30,
         sendWindowStart: 8,
         sendWindowEnd: 19,
@@ -53,6 +55,7 @@ export async function getWorkerConfig(): Promise<WorkerConfig> {
 }
 
 export interface UpdateWorkerConfigInput {
+  syncSource?: "DB" | "EXCEL";
   intervalMinutes?: number;
   intervalR1?: number;
   intervalR2?: number;
@@ -78,6 +81,7 @@ export async function updateWorkerConfig(data: UpdateWorkerConfigInput): Promise
   const id = existing?.id ?? 1;
 
   const payload: Record<string, any> = {};
+  if (data.syncSource      !== undefined) payload.syncSource      = data.syncSource;
   if (data.intervalMinutes !== undefined) payload.intervalMinutes = data.intervalMinutes;
   if (data.intervalR1      !== undefined) payload.intervalR1      = data.intervalR1;
   if (data.intervalR2      !== undefined) payload.intervalR2      = data.intervalR2;
@@ -104,6 +108,7 @@ export async function updateWorkerConfig(data: UpdateWorkerConfigInput): Promise
     where: { id },
     update: payload,
     create: {
+      syncSource: data.syncSource ?? "DB",
       intervalMinutes: data.intervalMinutes ?? 30,
       sendWindowStart: data.sendWindowStart ?? 8,
       sendWindowEnd: data.sendWindowEnd ?? 19,

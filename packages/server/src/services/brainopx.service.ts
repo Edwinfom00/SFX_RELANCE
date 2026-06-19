@@ -1,6 +1,9 @@
 import prisma from "../utils/prisma";
 import { addHours } from "../utils/date";
 import type { TransportType } from "../types";
+import * as XLSX from "xlsx";
+import * as path from "path";
+import * as fs from "fs";
 
 type ReminderSchedule = Array<{ reminderNumber: number; delayHours: number }>;
 
@@ -39,11 +42,105 @@ async function fetchFromBrainOpx(): Promise<BrainOpxRow[]> {
   `);
 }
 
+function parseExcelDate(excelDate: any): Date {
+  if (!excelDate) return new Date();
+  if (typeof excelDate === "number") {
+    // Excel epoch starts on Dec 30, 1899
+    const UTC_EPOCH_MS = Date.UTC(1899, 11, 30);
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
+    return new Date(UTC_EPOCH_MS + excelDate * MS_PER_DAY);
+  }
+  const d = new Date(excelDate);
+  return isNaN(d.getTime()) ? new Date() : d;
+}
+
+export async function fetchFromExcel(): Promise<BrainOpxRow[]> {
+  const excelPath = process.env.EXCEL_SYNC_PATH
+    ? path.resolve(process.env.EXCEL_SYNC_PATH)
+    : path.resolve(process.cwd(), "../../OMA TL - Quotations awaiting Customer Feedback.xlsx");
+
+  console.log(`[Excel Sync] Reading file from: ${excelPath}`);
+
+  if (!fs.existsSync(excelPath)) {
+    console.warn(`[Excel Sync] File not found at: ${excelPath}. Returning empty list.`);
+    return [];
+  }
+
+  try {
+    const workbook = XLSX.readFile(excelPath);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json<any>(worksheet, { defval: "" });
+
+    const rows: BrainOpxRow[] = [];
+
+    for (const row of data) {
+      const docNo = String(row["Doc No"] || row["Tmp No"] || "").trim();
+      if (!docNo) continue;
+
+      const customerId = String(row["Customer Id"] || "").trim();
+      const customerName = String(row["Customer Name"] || "").trim();
+      const originalEmail = String(row["Emails"] || "").trim();
+
+      const fileType = String(row["File Type"] || row["Activity"] || "").toLowerCase();
+      let transportType: "AIR" | "SEA" | "ROAD" = "AIR";
+      if (fileType.includes("sea") || fileType.includes("ocean")) {
+        transportType = "SEA";
+      } else if (fileType.includes("road") || fileType.includes("truck") || fileType.includes("tra")) {
+        transportType = "ROAD";
+      }
+
+      let paysCode = "CMR";
+      let agenceCode = "DLA";
+      if (docNo.startsWith("TL1")) {
+        paysCode = "TGO";
+        agenceCode = "LOM";
+      } else if (docNo.startsWith("FM1")) {
+        paysCode = "CMR";
+        agenceCode = "DLA";
+      }
+
+      const rawDate = row["Transmission Date"] || row["Transaction Date"];
+      const date = parseExcelDate(rawDate);
+
+      rows.push({
+        quotation_id: docNo,
+        libelle: customerName,
+        client_code: customerId,
+        client_email: originalEmail,
+        client_language: "FR", // Default client language
+        transmission_date: date,
+        transport_type: transportType,
+        pays_code: paysCode,
+        agence_code: agenceCode,
+      });
+    }
+
+    console.log(`[Excel Sync] Parsed ${rows.length} quotations from Excel.`);
+    return rows;
+  } catch (err) {
+    console.error(`[Excel Sync] Error parsing Excel file:`, err);
+    throw err;
+  }
+}
+
 
 export async function syncQuotations(): Promise<void> {
   console.log("[BrainOpx] Syncing quotations...");
 
-  const rows = await fetchFromBrainOpx();
+  let syncSource = "DB";
+  try {
+    const config = await prisma.workerConfig.findFirst({ select: { syncSource: true } });
+    if (config?.syncSource) {
+      syncSource = config.syncSource;
+    }
+  } catch (err) {
+    console.error("[BrainOpx] Error fetching config:", err);
+  }
+
+  console.log(`[BrainOpx] Sync source mode: ${syncSource}`);
+
+  const rows = syncSource === "EXCEL" ? await fetchFromExcel() : await fetchFromBrainOpx();
   const remoteIds = new Set(rows.map((r) => r.quotation_id));
 
   const localActive = await prisma.quotation.findMany({

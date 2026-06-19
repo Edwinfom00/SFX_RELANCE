@@ -11,8 +11,8 @@ export async function cancelQuotationAction(id: number) {
   revalidatePath("/quotations");
 }
 
-import { importQuotationsAction as importAction } from "./import";
+import { syncFromExcelFileAction as syncAction } from "./import";
 
-export async function importQuotationsAction(rows: any[]) {
-  return importAction(rows);
+export async function syncFromExcelFileAction() {
+  return syncAction();
 }

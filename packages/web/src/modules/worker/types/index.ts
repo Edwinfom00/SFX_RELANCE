@@ -5,6 +5,7 @@ export interface ReminderScheduleEntry {
 
 export interface WorkerConfig {
   id: number;
+  syncSource: "DB" | "EXCEL";
   intervalMinutes: number;
   intervalR1: number;
   intervalR2: number;

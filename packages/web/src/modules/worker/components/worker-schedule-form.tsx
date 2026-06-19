@@ -22,6 +22,7 @@ interface WorkerScheduleFormProps {
 
 export function WorkerScheduleForm({ config }: WorkerScheduleFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [syncSource, setSyncSource] = useState<"DB" | "EXCEL">(config.syncSource ?? "DB");
   const [intervalMinutes, setIntervalMinutes] = useState(config.intervalMinutes);
   const [intervalR1, setIntervalR1] = useState(config.intervalR1 ?? 30);
   const [intervalR2, setIntervalR2] = useState(config.intervalR2 ?? 30);
@@ -50,6 +51,7 @@ export function WorkerScheduleForm({ config }: WorkerScheduleFormProps) {
   function handleSave() {
     startTransition(async () => {
       await updateWorkerConfigAction({
+        syncSource,
         intervalMinutes,
         intervalR1,
         intervalR2,
@@ -66,6 +68,39 @@ export function WorkerScheduleForm({ config }: WorkerScheduleFormProps) {
 
   return (
     <div>
+      {/* Source de synchronisation */}
+      <SettingRow
+        label="Source de synchronisation"
+        hint="Sélectionnez l'origine des cotations actives à relancer."
+      >
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => setSyncSource("DB")}
+            className="flex-1 flex flex-col items-start gap-1 p-3.5 rounded-lg border text-left cursor-pointer transition-all"
+            style={{
+              background: syncSource === "DB" ? "#f2f6ff" : "#fff",
+              borderColor: syncSource === "DB" ? "#0057ff" : "#e6ebf1",
+            }}
+          >
+            <span className="text-[13px] font-semibold text-[#0a2540]">Base de données (Live)</span>
+            <span className="text-[11px] text-[#697386]">Lecture directe depuis SQL Server (v_sfx_active_quotations)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSyncSource("EXCEL")}
+            className="flex-1 flex flex-col items-start gap-1 p-3.5 rounded-lg border text-left cursor-pointer transition-all"
+            style={{
+              background: syncSource === "EXCEL" ? "#f2f6ff" : "#fff",
+              borderColor: syncSource === "EXCEL" ? "#0057ff" : "#e6ebf1",
+            }}
+          >
+            <span className="text-[13px] font-semibold text-[#0a2540]">Fichier Excel (Démo)</span>
+            <span className="text-[11px] text-[#697386]">Lecture locale du fichier Excel sur le disque du serveur</span>
+          </button>
+        </div>
+      </SettingRow>
+
       {/* Mode de déclenchement */}
       <SettingRow
         label="Mode de déclenchement"

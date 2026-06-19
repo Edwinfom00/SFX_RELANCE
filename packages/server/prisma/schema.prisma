@@ -135,6 +135,7 @@ model EmailTemplate {
 model WorkerConfig {
 
   id Int @id @default(autoincrement())
+  syncSource String @default("DB") @map("sync_source")
   intervalMinutes Int @default(30) @map("interval_minutes")
   intervalR1      Int @default(30) @map("interval_r1")
   intervalR2      Int @default(30) @map("interval_r2")
