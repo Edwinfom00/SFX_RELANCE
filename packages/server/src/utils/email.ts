@@ -7,7 +7,7 @@ export function parseRecipientEmails(emailField: string): { to: string; cc: stri
   if (!emailField) return { to: "", cc: "" };
   
   const emails = emailField
-    .split(",")
+    .split(/[;,]/)
     .map((e) => e.trim())
     .filter((e) => e.length > 0);
     

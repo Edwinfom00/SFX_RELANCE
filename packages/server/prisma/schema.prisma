@@ -161,3 +161,14 @@ model WorkerConfig {
 
   @@map("worker_config")
 }
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique @map("code")
+  name      String   @default("") @map("name")
+  emails    String   @default("") @map("emails")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("clients")
+}

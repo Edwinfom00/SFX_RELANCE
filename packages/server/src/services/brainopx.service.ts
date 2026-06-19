@@ -190,12 +190,25 @@ export async function syncQuotations(): Promise<void> {
       continue;
     }
 
+    let clientEmail = row.client_email || "";
+    try {
+      const localClient = await prisma.client.findUnique({
+        where: { code: row.client_code },
+        select: { emails: true }
+      });
+      if (localClient?.emails) {
+        clientEmail = localClient.emails;
+      }
+    } catch (err) {
+      console.error("[BrainOpx] Error looking up local client:", err);
+    }
+
     await prisma.quotation.create({
       data: {
         quotationId:      row.quotation_id,
         libelle:          row.libelle ?? "",
         clientCode:       row.client_code,
-        clientEmail:      row.client_email,
+        clientEmail,
         clientLanguage:   row.client_language ?? "FR",
         transmissionDate: new Date(row.transmission_date),
         transportType,
@@ -211,3 +224,103 @@ export async function syncQuotations(): Promise<void> {
 
   console.log(`[BrainOpx] Sync terminée — ${created} créée(s), ${toComplete.length} complétée(s), ${skipped} ignorée(s)`);
 }
+
+export async function syncClients(): Promise<void> {
+  console.log("[ClientSync] Syncing clients...");
+
+  let syncSource = "DB";
+  try {
+    const config = await prisma.workerConfig.findFirst({ select: { syncSource: true } });
+    if (config?.syncSource) {
+      syncSource = config.syncSource;
+    }
+  } catch (err) {
+    console.error("[ClientSync] Error fetching config:", err);
+  }
+
+  console.log(`[ClientSync] Sync source mode: ${syncSource}`);
+
+  interface SimpleClient {
+    code: string;
+    name: string;
+    emails: string;
+  }
+
+  let clients: SimpleClient[] = [];
+
+  if (syncSource === "EXCEL") {
+    try {
+      const quotations = await fetchFromExcel();
+      const uniqueMap = new Map<string, typeof quotations[0]>();
+      for (const q of quotations) {
+        if (q.client_code) {
+          uniqueMap.set(q.client_code, q);
+        }
+      }
+      clients = Array.from(uniqueMap.values()).map(q => ({
+        code: q.client_code,
+        name: q.libelle || q.client_code,
+        emails: q.client_email || "",
+      }));
+    } catch (err) {
+      console.error("[ClientSync] Error reading clients from Excel:", err);
+    }
+  } else {
+    try {
+      const db = process.env.BRAINOPX_DATABASE ?? "BopxFMT";
+      const rows = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT [Code Client] AS client_code, [Nom Client] AS name, [Emails] AS client_email
+        FROM [${db}].[dbo].[tn_Clients]
+        WHERE [Client Actif] = 1
+      `);
+      clients = rows.map(r => ({
+        code: r.client_code,
+        name: r.name || "",
+        emails: r.client_email || "",
+      }));
+    } catch (err) {
+      console.error("[ClientSync] Error reading clients from SQL Server:", err);
+    }
+  }
+
+  console.log(`[ClientSync] Found ${clients.length} clients to sync.`);
+
+  let created = 0;
+  let updated = 0;
+
+  for (const c of clients) {
+    try {
+      const existing = await prisma.client.findUnique({
+        where: { code: c.code }
+      });
+
+      if (existing) {
+        // Le client existe : on met à jour son nom (au cas où il a changé),
+        // mais on ne touche pas aux e-mails sauf s'ils sont vides localement.
+        await prisma.client.update({
+          where: { id: existing.id },
+          data: {
+            name: c.name,
+            emails: existing.emails || c.emails || "",
+          }
+        });
+        updated++;
+      } else {
+        // Le client n'existe pas en local : on le crée
+        await prisma.client.create({
+          data: {
+            code: c.code,
+            name: c.name,
+            emails: c.emails || "",
+          }
+        });
+        created++;
+      }
+    } catch (err) {
+      console.error(`[ClientSync] Error syncing client ${c.code}:`, err);
+    }
+  }
+
+  console.log(`[ClientSync] Client sync complete: ${created} created, ${updated} updated.`);
+}
+

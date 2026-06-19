@@ -15,7 +15,13 @@ async function getTransporter(): Promise<Transporter> {
   const port   = config?.smtpPort   || Number(process.env.SMTP_PORT) || 587;
   const secure = config?.smtpSecure ?? (process.env.SMTP_SECURE === "true");
   const user   = config?.smtpUser   || process.env.SMTP_USER   || "";
-  const pass   = config?.smtpPass   ? decrypt(config.smtpPass) : (process.env.SMTP_PASS || "");
+  let pass = "";
+  if (config?.smtpPass) {
+    pass = decrypt(config.smtpPass);
+  }
+  if (!pass) {
+    pass = process.env.SMTP_PASS || "";
+  }
   const hash   = `${host}:${port}:${secure}:${user}:${pass}`;
 
   if (!transporter || hash !== lastConfigHash) {

@@ -135,89 +135,7 @@ async function runTests() {
       }
     });
 
-    console.log(`Created test quotation: ${testQuote.quotationId}`);
-
-    // Integration Test A: Worker handles missing PDF directory correctly
-    cleanupTestDir();
-    console.log("Running processReminders(1) with missing PDF directory...");
-    await processReminders(1);
-
-    const updatedQuoteA = await prisma.quotation.findUnique({
-      where: { id: testQuote.id },
-    });
-    const emailLogA = await prisma.emailLog.findFirst({
-      where: { quotationId: testQuote.id, reminderNumber: 1 },
-    });
-
-    console.assert(emailLogA !== null, "Should have created an EmailLog");
-    console.assert(emailLogA?.status === "FAILED", `EmailLog status should be FAILED, got ${emailLogA?.status}`);
-    console.assert(emailLogA?.errorMessage?.includes("Le répertoire des PDF de cotation est introuvable"), `Error message should be DIR_NOT_FOUND, got "${emailLogA?.errorMessage}"`);
-    console.assert(updatedQuoteA?.status === "ACTIVE", `Quotation status should be ACTIVE, got ${updatedQuoteA?.status}`);
-    console.assert(updatedQuoteA?.currentReminder === 1, `Quotation currentReminder should be 1, got ${updatedQuoteA?.currentReminder}`);
-    console.log("✅ Integration Case A: Worker handles missing PDF directory passed");
-
-    // Integration Test B: Worker handles missing PDF file (NO_PDF_FOUND)
-    const testQuotationIdB = `TEST-PDF-B-${Date.now()}`;
-    const testQuoteB = await prisma.quotation.create({
-      data: {
-        quotationId: testQuotationIdB,
-        clientCode: "TEST_CLI",
-        clientEmail: "test@client.com",
-        clientLanguage: "FR",
-        libelle: "Test Quotation PDF B",
-        transmissionDate: new Date(Date.now() - 25 * 3600 * 1000),
-        transportType: "AIR",
-        status: "ACTIVE",
-        currentReminder: 0,
-        nextReminderAt: new Date(Date.now() - 1 * 3600 * 1000),
-        paysCode: "CMR",
-        agenceCode: "DLA",
-      }
-    });
-
-    // Create the directory but no files
-    fs.mkdirSync(path.join(TEST_DIR, "CMR", "DLA"), { recursive: true });
-    console.log("Running processReminders(1) with empty PDF directory...");
-    await processReminders(1);
-
-    const updatedQuoteB = await prisma.quotation.findUnique({
-      where: { id: testQuoteB.id },
-    });
-    const emailLogB = await prisma.emailLog.findFirst({
-      where: { quotationId: testQuoteB.id, reminderNumber: 1 },
-    });
-
-    console.assert(emailLogB !== null, "Should have created an EmailLog");
-    console.assert(emailLogB?.status === "FAILED", `EmailLog status should be FAILED, got ${emailLogB?.status}`);
-    console.assert(emailLogB?.errorMessage?.includes("Aucun fichier PDF associé à la cotation"), `Error message should be NO_PDF_FOUND, got "${emailLogB?.errorMessage}"`);
-    console.assert(updatedQuoteB?.status === "ACTIVE", `Quotation status should be ACTIVE, got ${updatedQuoteB?.status}`);
-    console.assert(updatedQuoteB?.currentReminder === 1, `Quotation currentReminder should be 1, got ${updatedQuoteB?.currentReminder}`);
-    console.log("✅ Integration Case B: Worker handles missing PDF file passed");
-
-    // Integration Test C: Worker sends email successfully when PDF is present
-    const testQuotationIdC = `TEST-PDF-C-${Date.now()}`;
-    const testQuoteC = await prisma.quotation.create({
-      data: {
-        quotationId: testQuotationIdC,
-        clientCode: "TEST_CLI",
-        clientEmail: "test@client.com",
-        clientLanguage: "FR",
-        libelle: "Test Quotation PDF C",
-        transmissionDate: new Date(Date.now() - 25 * 3600 * 1000),
-        transportType: "AIR",
-        status: "ACTIVE",
-        currentReminder: 0,
-        nextReminderAt: new Date(Date.now() - 1 * 3600 * 1000),
-        paysCode: "CMR",
-        agenceCode: "DLA",
-      }
-    });
-
-    // Write a dummy PDF file
-    fs.writeFileSync(path.join(TEST_DIR, "CMR", "DLA", `${testQuotationIdC}.pdf`), "pdf contents");
-    console.log("Running processReminders(1) with valid PDF file...");
-
-    // Mock nodemailer transporter
+    // Mock nodemailer transporter globally for the integration tests
     const nodemailer = require("nodemailer");
     const originalCreateTransport = nodemailer.createTransport;
     
@@ -232,35 +150,118 @@ async function runTests() {
     };
 
     try {
+      // Integration Test A: Worker handles missing PDF directory correctly
+      cleanupTestDir();
+      console.log("Running processReminders(1) with missing PDF directory...");
       await processReminders(1);
+
+      const updatedQuoteA = await prisma.quotation.findUnique({
+        where: { id: testQuote.id },
+      });
+      const emailLogA = await prisma.emailLog.findFirst({
+        where: { quotationId: testQuote.id, reminderNumber: 1 },
+      });
+
+      console.assert(emailLogA !== null, "Should have created an EmailLog");
+      console.assert(emailLogA?.status === "SENT", `EmailLog status should be SENT, got ${emailLogA?.status}`);
+      console.assert(emailLogA?.errorMessage?.includes("PDF absent: Le répertoire des PDF de cotation est introuvable"), `Error message should be PDF absent warning, got "${emailLogA?.errorMessage}"`);
+      console.assert(updatedQuoteA?.status === "ACTIVE", `Quotation status should be ACTIVE, got ${updatedQuoteA?.status}`);
+      console.assert(updatedQuoteA?.currentReminder === 1, `Quotation currentReminder should be 1, got ${updatedQuoteA?.currentReminder}`);
+      console.log("✅ Integration Case A: Worker handles missing PDF directory passed");
+
+      // Integration Test B: Worker handles missing PDF file (NO_PDF_FOUND)
+      const testQuotationIdB = `TEST-PDF-B-${Date.now()}`;
+      const testQuoteB = await prisma.quotation.create({
+        data: {
+          quotationId: testQuotationIdB,
+          clientCode: "TEST_CLI",
+          clientEmail: "test@client.com",
+          clientLanguage: "FR",
+          libelle: "Test Quotation PDF B",
+          transmissionDate: new Date(Date.now() - 25 * 3600 * 1000),
+          transportType: "AIR",
+          status: "ACTIVE",
+          currentReminder: 0,
+          nextReminderAt: new Date(Date.now() - 1 * 3600 * 1000),
+          paysCode: "CMR",
+          agenceCode: "DLA",
+        }
+      });
+
+      // Create the directory but no files
+      fs.mkdirSync(path.join(TEST_DIR, "CMR", "DLA"), { recursive: true });
+      console.log("Running processReminders(1) with empty PDF directory...");
+      await processReminders(1);
+
+      const updatedQuoteB = await prisma.quotation.findUnique({
+        where: { id: testQuoteB.id },
+      });
+      const emailLogB = await prisma.emailLog.findFirst({
+        where: { quotationId: testQuoteB.id, reminderNumber: 1 },
+      });
+
+      console.assert(emailLogB !== null, "Should have created an EmailLog");
+      console.assert(emailLogB?.status === "SENT", `EmailLog status should be SENT, got ${emailLogB?.status}`);
+      console.assert(emailLogB?.errorMessage?.includes("PDF absent: Aucun fichier PDF associé à la cotation"), `Error message should be PDF absent warning, got "${emailLogB?.errorMessage}"`);
+      console.assert(updatedQuoteB?.status === "ACTIVE", `Quotation status should be ACTIVE, got ${updatedQuoteB?.status}`);
+      console.assert(updatedQuoteB?.currentReminder === 1, `Quotation currentReminder should be 1, got ${updatedQuoteB?.currentReminder}`);
+      console.log("✅ Integration Case B: Worker handles missing PDF file passed");
+
+      // Integration Test C: Worker sends email successfully when PDF is present
+      const testQuotationIdC = `TEST-PDF-C-${Date.now()}`;
+      const testQuoteC = await prisma.quotation.create({
+        data: {
+          quotationId: testQuotationIdC,
+          clientCode: "TEST_CLI",
+          clientEmail: "test@client.com",
+          clientLanguage: "FR",
+          libelle: "Test Quotation PDF C",
+          transmissionDate: new Date(Date.now() - 25 * 3600 * 1000),
+          transportType: "AIR",
+          status: "ACTIVE",
+          currentReminder: 0,
+          nextReminderAt: new Date(Date.now() - 1 * 3600 * 1000),
+          paysCode: "CMR",
+          agenceCode: "DLA",
+        }
+      });
+
+      // Write a dummy PDF file
+      fs.writeFileSync(path.join(TEST_DIR, "CMR", "DLA", `${testQuotationIdC}.pdf`), "pdf contents");
+      console.log("Running processReminders(1) with valid PDF file...");
+      
+      // Reset lastSentMailOptions
+      lastSentMailOptions = null;
+      await processReminders(1);
+
+      const updatedQuoteC = await prisma.quotation.findUnique({
+        where: { id: testQuoteC.id },
+      });
+      const emailLogC = await prisma.emailLog.findFirst({
+        where: { quotationId: testQuoteC.id, reminderNumber: 1 },
+      });
+
+      console.assert(emailLogC !== null, "Should have created an EmailLog");
+      console.assert(emailLogC?.status === "SENT", `EmailLog status should be SENT, got ${emailLogC?.status}`);
+      console.assert(updatedQuoteC?.status === "ACTIVE", `Quotation status should be ACTIVE, got ${updatedQuoteC?.status}`);
+      console.assert(updatedQuoteC?.currentReminder === 1, `Quotation currentReminder should be 1, got ${updatedQuoteC?.currentReminder}`);
+      console.assert(lastSentMailOptions !== null, "Should have called nodemailer sendMail");
+      console.assert(lastSentMailOptions.attachments && lastSentMailOptions.attachments.length === 1, "Should have attached 1 file");
+      console.assert(lastSentMailOptions.attachments[0].filename === `${testQuotationIdC}.pdf`, `Attached filename should match, got ${lastSentMailOptions.attachments[0].filename}`);
+      console.log("✅ Integration Case C: Worker sends email successfully with PDF passed");
+
+      // Clean up our DB test quotations
+      await prisma.emailLog.deleteMany({
+        where: { quotationId: { in: [testQuote.id, testQuoteB.id, testQuoteC.id] } }
+      });
+      await prisma.quotation.deleteMany({
+        where: { id: { in: [testQuote.id, testQuoteB.id, testQuoteC.id] } }
+      });
+      console.log("🧹 DB clean up completed successfully.");
+
     } finally {
       nodemailer.createTransport = originalCreateTransport;
     }
-
-    const updatedQuoteC = await prisma.quotation.findUnique({
-      where: { id: testQuoteC.id },
-    });
-    const emailLogC = await prisma.emailLog.findFirst({
-      where: { quotationId: testQuoteC.id, reminderNumber: 1 },
-    });
-
-    console.assert(emailLogC !== null, "Should have created an EmailLog");
-    console.assert(emailLogC?.status === "SENT", `EmailLog status should be SENT, got ${emailLogC?.status}`);
-    console.assert(updatedQuoteC?.status === "ACTIVE", `Quotation status should be ACTIVE, got ${updatedQuoteC?.status}`);
-    console.assert(updatedQuoteC?.currentReminder === 1, `Quotation currentReminder should be 1, got ${updatedQuoteC?.currentReminder}`);
-    console.assert(lastSentMailOptions !== null, "Should have called nodemailer sendMail");
-    console.assert(lastSentMailOptions.attachments && lastSentMailOptions.attachments.length === 1, "Should have attached 1 file");
-    console.assert(lastSentMailOptions.attachments[0].filename === `${testQuotationIdC}.pdf`, `Attached filename should match, got ${lastSentMailOptions.attachments[0].filename}`);
-    console.log("✅ Integration Case C: Worker sends email successfully with PDF passed");
-
-    // Clean up our DB test quotations
-    await prisma.emailLog.deleteMany({
-      where: { quotationId: { in: [testQuote.id, testQuoteB.id, testQuoteC.id] } }
-    });
-    await prisma.quotation.deleteMany({
-      where: { id: { in: [testQuote.id, testQuoteB.id, testQuoteC.id] } }
-    });
-    console.log("🧹 DB clean up completed successfully.");
 
   } finally {
     // Restore env and cleanup

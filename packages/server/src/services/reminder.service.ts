@@ -195,12 +195,25 @@ async function sendReminder(
   const subject = resolveTemplate(subjectTpl, { ...quotation, libelle });
   const html    = textToHtml(resolveTemplate(bodyTpl, { ...quotation, libelle }));
 
+  let recipientEmail = quotation.clientEmail;
+  try {
+    const localClient = await prisma.client.findUnique({
+      where: { code: quotation.clientCode },
+      select: { emails: true }
+    });
+    if (localClient?.emails) {
+      recipientEmail = localClient.emails;
+    }
+  } catch (err) {
+    console.error(`${tag} Error looking up local client emails for ${quotation.clientCode}:`, err);
+  }
+
   const log = await prisma.emailLog.create({
     data: {
       quotationId:    quotation.id,
       reminderNumber,
       templateId:     template.id,
-      recipientEmail: quotation.clientEmail,
+      recipientEmail: recipientEmail,
       status:         "PENDING",
     },
   });
@@ -216,29 +229,30 @@ async function sendReminder(
   );
 
   if (pdfSearchResult.error) {
-    errorMsg = pdfSearchResult.errorDetails;
-    console.warn(`${tag} Relance annulée pour ${quotation.quotationId} : ${errorMsg}`);
+    console.warn(`${tag} PDF manquant pour ${quotation.quotationId} (${pdfSearchResult.errorDetails}) — Envoi de la relance sans pièce jointe.`);
+    errorMsg = `PDF absent: ${pdfSearchResult.errorDetails}`;
   } else if (pdfSearchResult.filePath) {
     attachments.push({
       filename: require("path").basename(pdfSearchResult.filePath),
       path: pdfSearchResult.filePath,
     });
+  }
 
-    const { to, cc } = parseRecipientEmails(quotation.clientEmail);
+  const { to, cc } = parseRecipientEmails(recipientEmail);
 
-    for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
-      try {
-        await sendMail({ to, cc: cc || undefined, subject, html, attachments });
-        success = true;
-        break;
-      } catch (err) {
-        errorMsg = err instanceof Error ? err.message : String(err);
-        if (attempt < MAX_RETRY) {
-          await prisma.emailLog.update({
-            where: { id: log.id },
-            data:  { status: "RETRIED", retryCount: attempt + 1 },
-          });
-        }
+  for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
+    try {
+      await sendMail({ to, cc: cc || undefined, subject, html, attachments });
+      success = true;
+      break;
+    } catch (err) {
+      const sendError = err instanceof Error ? err.message : String(err);
+      errorMsg = errorMsg ? `${errorMsg} | Erreur envoi: ${sendError}` : sendError;
+      if (attempt < MAX_RETRY) {
+        await prisma.emailLog.update({
+          where: { id: log.id },
+          data:  { status: "RETRIED", retryCount: attempt + 1 },
+        });
       }
     }
   }
@@ -268,5 +282,5 @@ async function sendReminder(
     }),
   ]);
 
-  console.log(`${tag} ${success ? "✓" : "✗"} ${quotation.quotationId} → ${quotation.clientEmail}`);
+  console.log(`${tag} ${success ? "✓" : "✗"} ${quotation.quotationId} → ${recipientEmail}`);
 }

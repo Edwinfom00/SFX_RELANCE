@@ -1,5 +1,5 @@
 import express from "express";
-import { syncQuotations } from "../services/brainopx.service";
+import { syncQuotations, syncClients } from "../services/brainopx.service";
 import { processReminders } from "../services/reminder.service";
 
 export interface WorkerState {
@@ -15,10 +15,11 @@ export interface WorkerState {
 
 /** Registre partagé de tous les workers — clé = workerId */
 export const workerRegistry = new Map<string, WorkerState>([
-  ["sync", { id: "sync", label: "Sync BrainOpx", paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
-  ["r1",   { id: "r1",   label: "Relance #1",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
-  ["r2",   { id: "r2",   label: "Relance #2",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
-  ["r3",   { id: "r3",   label: "Relance #3",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["sync",        { id: "sync",        label: "Sync BrainOpx", paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["client-sync", { id: "client-sync", label: "Sync Clients",  paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["r1",          { id: "r1",          label: "Relance #1",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["r2",          { id: "r2",          label: "Relance #2",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["r3",          { id: "r3",          label: "Relance #3",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
 ]);
 
 function stateSnapshot(s: WorkerState) {
@@ -38,6 +39,8 @@ export async function runTickFor(workerId: string): Promise<void> {
   const start = Date.now();
   if (workerId === "sync") {
     await syncQuotations();
+  } else if (workerId === "client-sync") {
+    await syncClients();
   } else if (workerId === "r1") {
     await processReminders(1);
   } else if (workerId === "r2") {
