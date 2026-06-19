@@ -133,7 +133,7 @@ export async function getWorkerStats(): Promise<WorkerStats> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [totalActive, totalCompleted, totalClosed, emailsSentToday, emailsFailedTotal, pendingReminders, lastLog] =
+  const [totalActive, totalCompleted, totalClosed, emailsSentToday, emailsFailedTotal, pendingReminders, outgoingPending, lastLog] =
     await Promise.all([
       prisma.quotation.count({ where: { status: "ACTIVE" } }),
       prisma.quotation.count({ where: { status: "COMPLETED" } }),
@@ -141,6 +141,7 @@ export async function getWorkerStats(): Promise<WorkerStats> {
       prisma.emailLog.count({ where: { status: "SENT", sentAt: { gte: today } } }),
       prisma.emailLog.count({ where: { status: "FAILED" } }),
       prisma.quotation.count({ where: { status: "ACTIVE", nextReminderAt: { lte: new Date() } } }),
+      prisma.outgoingQuotation.count({ where: { status: "PENDING" } }),
       prisma.emailLog.findFirst({ orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
     ]);
 
@@ -151,6 +152,7 @@ export async function getWorkerStats(): Promise<WorkerStats> {
     emailsSentToday,
     emailsFailedTotal,
     pendingReminders,
+    outgoingPending,
     lastRunAt: lastLog?.createdAt ?? null,
     nextRunAt: null,
   };

@@ -1,24 +1,56 @@
 %PDF-1.4
-1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
-2 0 obj <</Type /Pages /Kids [3 0 R] /Count 1>> endobj
-3 0 obj <</Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources <<>> /Contents 4 0 R>> endobj
-4 0 obj <</Length 43>> stream
-q
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792]
+   /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+
+4 0 obj
+<< /Length 320 >>
+stream
 BT
+/F1 18 Tf
+72 720 Td
+(COTATION DE TRANSPORT - SFX LOGISTICS) Tj
 /F1 12 Tf
-72 712 Td
-(Mock PDF Content) Tj
+0 -40 Td
+(N Piece : FM1XX250708) Tj
+0 -20 Td
+(Client  : NIGER-CRAIE) Tj
+0 -20 Td
+(Transport : ROUTE - Douala to Yaounde) Tj
+0 -20 Td
+(Montant : 1 250 000 XAF) Tj
+0 -20 Td
+(Date exp. : 22/07/2025) Tj
+0 -40 Td
+(Document de test - SFX Relance System) Tj
 ET
-Q
-endstream endobj
+endstream
+endobj
+
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+
 xref
-0 5
+0 6
 0000000000 65535 f 
 0000000009 00000 n 
-0000000056 00000 n 
-0000000111 00000 n 
-0000000212 00000 n 
-trailer <</Size 5 /Root 1 0 R>>
+0000000058 00000 n 
+0000000115 00000 n 
+0000000274 00000 n 
+0000000646 00000 n 
+
+trailer
+<< /Size 6 /Root 1 0 R >>
 startxref
-306
+733
 %%EOF

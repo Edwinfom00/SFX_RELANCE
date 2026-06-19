@@ -34,6 +34,7 @@ export interface WorkerStats {
   emailsSentToday: number;
   emailsFailedTotal: number;
   pendingReminders: number;
+  outgoingPending: number; // cotations à transmettre
   lastRunAt: Date | null;
   nextRunAt: Date | null;
 }

@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CheckCircle, Clock, AlertCircle, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { TransportBadge, Pill, SfxAvatar } from "@/components/sfx-ui";
 import { TransmitDialog } from "./transmit-dialog";
 import type { OutgoingQuotation } from "../types";
@@ -91,9 +92,12 @@ export function OutgoingQuotationsTable({ quotations, page, pageSize, total }: O
           }}
         >
           {/* N° Pièce */}
-          <div className="text-[12.5px] font-semibold text-[#0a2540] font-mono tracking-[-0.01em]">
+          <Link
+            href={`/outgoing-quotations/${q.id}`}
+            className="text-[12.5px] font-semibold text-[#0057ff] font-mono tracking-[-0.01em] hover:underline"
+          >
             {q.noPiece}
-          </div>
+          </Link>
 
           {/* Client & dossier */}
           <div className="min-w-0">
