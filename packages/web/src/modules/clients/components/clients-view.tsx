@@ -135,7 +135,7 @@ export function ClientsView() {
                               key={idx}
                               className="inline-flex items-center gap-1 bg-[#f2f6ff] text-[#0057ff] border border-[#0057ff]/10 px-2 py-0.5 rounded-[5px] text-[11px] font-medium font-mono"
                             >
-                              <Mail className="h-2.7 w-2.7 stroke-[2]" />
+                              <Mail className="h-2.7 w-2.7 stroke-2" />
                               {email}
                             </span>
                           ))}

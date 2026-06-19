@@ -19,7 +19,7 @@ interface TemplatesSplitProps {
 }
 
 const reminderLabel: Record<number, string> = {
-  1: "1ʳᵉ relance", 2: "2ᵉ relance", 3: "Relance finale",
+  0: "Transmission", 1: "1ʳᵉ relance", 2: "2ᵉ relance", 3: "Relance finale",
 };
 
 const VARIABLES = [
@@ -33,6 +33,7 @@ const VARIABLES = [
 export function TemplatesSplit({ templates }: TemplatesSplitProps) {
   const [selectedId, setSelectedId] = useState<number | null>(templates[0]?.id ?? null);
   const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState<"REMINDER" | "TRANSMISSION">("REMINDER");
   const [isPending, startTransition] = useTransition();
   const [activeLang, setActiveLang] = useState<"fr" | "en">("fr");
 
@@ -44,10 +45,14 @@ export function TemplatesSplit({ templates }: TemplatesSplitProps) {
   const [isDirty, setIsDirty] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
-  const filtered = templates.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase()) ||
-    { AIR: "aérien", SEA: "maritime", ROAD: "route" }[t.transportType]?.includes(search.toLowerCase())
-  );
+  const filtered = templates.filter((t) => {
+    const cat = (t as any).category ?? "REMINDER";
+    if (cat !== activeCategory) return false;
+    return (
+      t.name.toLowerCase().includes(search.toLowerCase()) ||
+      ({ AIR: "aérien", SEA: "maritime", ROAD: "route" } as Record<string, string>)[t.transportType]?.includes(search.toLowerCase())
+    );
+  });
 
   const selected = templates.find((t) => t.id === selectedId) ?? templates[0];
 
@@ -125,6 +130,25 @@ export function TemplatesSplit({ templates }: TemplatesSplitProps) {
             </div>
             <TemplateDialog />
           </div>
+          {/* Onglets catégorie */}
+          <div className="flex gap-0.5 bg-[#f6f8fa] border border-[#e6ebf1] rounded-lg p-0.75 mb-2.5">
+            {(["REMINDER", "TRANSMISSION"] as const).map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => { setActiveCategory(cat); setSelectedId(null); }}
+                className="flex-1 h-6.5 rounded-md text-[11.5px] font-medium transition-all"
+                style={{
+                  background: activeCategory === cat ? "#fff" : "transparent",
+                  color: activeCategory === cat ? "#0a2540" : "#697386",
+                  boxShadow: activeCategory === cat ? "0 1px 2px rgba(10,37,64,0.06)" : "none",
+                  border: activeCategory === cat ? "1px solid #e6ebf1" : "1px solid transparent",
+                }}
+              >
+                {cat === "REMINDER" ? "Relances" : "Transmission"}
+              </button>
+            ))}
+          </div>
           <div className="flex items-center gap-1.5 h-7.5 px-2.5 bg-white border border-[#e6ebf1] rounded-lg text-[12.5px] text-[#8898aa]">
             <Search className="h-3.25 w-3.25 shrink-0" />
             <input
@@ -157,9 +181,13 @@ export function TemplatesSplit({ templates }: TemplatesSplitProps) {
                 >
                   <div className="flex items-center gap-2 mb-1.5">
                     <TransportBadge type={t.transportType} />
-                    <span className="w-4.5 h-4.5 rounded bg-[#f6f8fa] flex items-center justify-center text-[10.5px] font-bold text-[#0a2540] font-mono">
-                      #{t.reminderNumber}
-                    </span>
+                    {(t as any).category === "TRANSMISSION" ? (
+                      <Pill tone="blue" size="xs">Envoi initial</Pill>
+                    ) : (
+                      <span className="w-4.5 h-4.5 rounded bg-[#f6f8fa] flex items-center justify-center text-[10.5px] font-bold text-[#0a2540] font-mono">
+                        #{t.reminderNumber}
+                      </span>
+                    )}
                     {!t.isActive && <Pill tone="neutral" size="xs">Inactif</Pill>}
                   </div>
                   <div
@@ -199,8 +227,8 @@ export function TemplatesSplit({ templates }: TemplatesSplitProps) {
                   tpl_{selected.transportType.toLowerCase()}_{selected.reminderNumber}
                 </span>
                 <span className="text-[#d8dee6]">·</span>
-                <Pill tone={selected.reminderNumber === 3 ? "purple" : "blue"}>
-                  {reminderLabel[selected.reminderNumber]}
+                <Pill tone={(selected as any).category === "TRANSMISSION" ? "green" : selected.reminderNumber === 3 ? "purple" : "blue"}>
+                  {(selected as any).category === "TRANSMISSION" ? "Envoi initial (transmission)" : reminderLabel[selected.reminderNumber]}
                 </Pill>
                 {isDirty && <Pill tone="amber">Non enregistré</Pill>}
               </div>

@@ -124,16 +124,55 @@ We remain at your disposal and wish you a great day.
 Quotations Department — SFX Logistics
 {{user.phone}}`;
 
+// ── Templates TRANSMISSION ───────────────────────────────────────────────────
+
+const FR_TRANSMISSION = `Cher(e) Client(e),
+
+Nous avons le plaisir de vous faire parvenir ci-joint notre cotation n° **{{quote.id}}** pour **{{quote.libelle}}**.
+
+Veuillez trouver en pièce jointe le détail complet de notre offre. Cette cotation reste valable jusqu'à la date d'expiration mentionnée dans le document.
+
+Pour toute question, modification ou accord, n'hésitez pas à nous contacter directement par retour de cet email.
+
+Nous restons à votre disposition et vous souhaitons une excellente journée.
+
+---
+
+{{user.fullName}}
+Service Commercial — SFX Logistics
+{{user.phone}}`;
+
+const EN_TRANSMISSION = `Dear Customer,
+
+Please find attached our quotation N° **{{quote.id}}** for **{{quote.libelle}}**.
+
+This document details our full offer. The quotation remains valid until the expiry date mentioned in the attached file.
+
+For any questions, adjustments or acceptance, please do not hesitate to reply to this email.
+
+We remain at your disposal and wish you a wonderful day.
+
+---
+
+{{user.fullName}}
+Commercial Department — SFX Logistics
+{{user.phone}}`;
+
 const templates = [
-  { name: "Relance Aérien · 1ère relance (24h)",              transportType: "AIR",  reminderNumber: 1, subject: "Suivi de votre cotation N° {{quote.id}} — {{quote.libelle}}",    subjectEn: "Follow-up on your quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_1,         bodyEn: EN_RELANCE_1,         isActive: true },
-  { name: "Relance Aérien · 2ème relance (48h)",              transportType: "AIR",  reminderNumber: 2, subject: "Relance — cotation N° {{quote.id}} — {{quote.libelle}}",           subjectEn: "2nd Follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",      body: FR_RELANCE_2_AIR,     bodyEn: EN_RELANCE_2_AIR,     isActive: true },
-  { name: "Relance Aérien · 3ème et dernière relance (72h)",  transportType: "AIR",  reminderNumber: 3, subject: "Dernière relance — cotation N° {{quote.id}} — {{quote.libelle}}", subjectEn: "Final follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_3,         bodyEn: EN_RELANCE_3,         isActive: true },
-  { name: "Relance Maritime · 1ère relance (48h)",            transportType: "SEA",  reminderNumber: 1, subject: "Suivi de votre cotation N° {{quote.id}} — {{quote.libelle}}",    subjectEn: "Follow-up on your quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_1,         bodyEn: EN_RELANCE_1,         isActive: true },
-  { name: "Relance Maritime · 2ème relance (96h)",            transportType: "SEA",  reminderNumber: 2, subject: "Relance — cotation N° {{quote.id}} — {{quote.libelle}}",           subjectEn: "2nd Follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",      body: FR_RELANCE_2_SEA_ROAD, bodyEn: EN_RELANCE_2_SEA_ROAD, isActive: true },
-  { name: "Relance Maritime · 3ème et dernière relance (1 semaine)", transportType: "SEA", reminderNumber: 3, subject: "Dernière relance — cotation N° {{quote.id}} — {{quote.libelle}}", subjectEn: "Final follow-up — quotation N° {{quote.id}} — {{quote.libelle}}", body: FR_RELANCE_3, bodyEn: EN_RELANCE_3, isActive: true },
-  { name: "Relance Route · 1ère relance (48h)",               transportType: "ROAD", reminderNumber: 1, subject: "Suivi de votre cotation N° {{quote.id}} — {{quote.libelle}}",    subjectEn: "Follow-up on your quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_1,         bodyEn: EN_RELANCE_1,         isActive: true },
-  { name: "Relance Route · 2ème relance (96h)",               transportType: "ROAD", reminderNumber: 2, subject: "Relance — cotation N° {{quote.id}} — {{quote.libelle}}",           subjectEn: "2nd Follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",      body: FR_RELANCE_2_SEA_ROAD, bodyEn: EN_RELANCE_2_SEA_ROAD, isActive: true },
-  { name: "Relance Route · 3ème et dernière relance (1 semaine)", transportType: "ROAD", reminderNumber: 3, subject: "Dernière relance — cotation N° {{quote.id}} — {{quote.libelle}}", subjectEn: "Final follow-up — quotation N° {{quote.id}} — {{quote.libelle}}", body: FR_RELANCE_3, bodyEn: EN_RELANCE_3, isActive: true },
+  // ── Relances ──────────────────────────────────────────────────────────────
+  { name: "Relance Aérien · 1ère relance (24h)",              category: "REMINDER",      transportType: "AIR",  reminderNumber: 1, subject: "Suivi de votre cotation N° {{quote.id}} — {{quote.libelle}}",      subjectEn: "Follow-up on your quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_1,          bodyEn: EN_RELANCE_1,          isActive: true },
+  { name: "Relance Aérien · 2ème relance (48h)",              category: "REMINDER",      transportType: "AIR",  reminderNumber: 2, subject: "Relance — cotation N° {{quote.id}} — {{quote.libelle}}",             subjectEn: "2nd Follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",      body: FR_RELANCE_2_AIR,      bodyEn: EN_RELANCE_2_AIR,      isActive: true },
+  { name: "Relance Aérien · 3ème et dernière relance (72h)",  category: "REMINDER",      transportType: "AIR",  reminderNumber: 3, subject: "Dernière relance — cotation N° {{quote.id}} — {{quote.libelle}}",   subjectEn: "Final follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_3,          bodyEn: EN_RELANCE_3,          isActive: true },
+  { name: "Relance Maritime · 1ère relance (48h)",            category: "REMINDER",      transportType: "SEA",  reminderNumber: 1, subject: "Suivi de votre cotation N° {{quote.id}} — {{quote.libelle}}",      subjectEn: "Follow-up on your quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_1,          bodyEn: EN_RELANCE_1,          isActive: true },
+  { name: "Relance Maritime · 2ème relance (96h)",            category: "REMINDER",      transportType: "SEA",  reminderNumber: 2, subject: "Relance — cotation N° {{quote.id}} — {{quote.libelle}}",             subjectEn: "2nd Follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",      body: FR_RELANCE_2_SEA_ROAD, bodyEn: EN_RELANCE_2_SEA_ROAD, isActive: true },
+  { name: "Relance Maritime · 3ème et dernière relance (1s)", category: "REMINDER",      transportType: "SEA",  reminderNumber: 3, subject: "Dernière relance — cotation N° {{quote.id}} — {{quote.libelle}}",   subjectEn: "Final follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_3,          bodyEn: EN_RELANCE_3,          isActive: true },
+  { name: "Relance Route · 1ère relance (48h)",               category: "REMINDER",      transportType: "ROAD", reminderNumber: 1, subject: "Suivi de votre cotation N° {{quote.id}} — {{quote.libelle}}",      subjectEn: "Follow-up on your quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_1,          bodyEn: EN_RELANCE_1,          isActive: true },
+  { name: "Relance Route · 2ème relance (96h)",               category: "REMINDER",      transportType: "ROAD", reminderNumber: 2, subject: "Relance — cotation N° {{quote.id}} — {{quote.libelle}}",             subjectEn: "2nd Follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",      body: FR_RELANCE_2_SEA_ROAD, bodyEn: EN_RELANCE_2_SEA_ROAD, isActive: true },
+  { name: "Relance Route · 3ème et dernière relance (1s)",    category: "REMINDER",      transportType: "ROAD", reminderNumber: 3, subject: "Dernière relance — cotation N° {{quote.id}} — {{quote.libelle}}",   subjectEn: "Final follow-up — quotation N° {{quote.id}} — {{quote.libelle}}",    body: FR_RELANCE_3,          bodyEn: EN_RELANCE_3,          isActive: true },
+  // ── Transmission initiale ─────────────────────────────────────────────────
+  { name: "Transmission cotation Aérien",                     category: "TRANSMISSION",  transportType: "AIR",  reminderNumber: 0, subject: "Votre cotation N° {{quote.id}} — {{quote.libelle}}",               subjectEn: "Your quotation N° {{quote.id}} — {{quote.libelle}}",                 body: FR_TRANSMISSION,       bodyEn: EN_TRANSMISSION,       isActive: true },
+  { name: "Transmission cotation Maritime",                   category: "TRANSMISSION",  transportType: "SEA",  reminderNumber: 0, subject: "Votre cotation N° {{quote.id}} — {{quote.libelle}}",               subjectEn: "Your quotation N° {{quote.id}} — {{quote.libelle}}",                 body: FR_TRANSMISSION,       bodyEn: EN_TRANSMISSION,       isActive: true },
+  { name: "Transmission cotation Route",                      category: "TRANSMISSION",  transportType: "ROAD", reminderNumber: 0, subject: "Votre cotation N° {{quote.id}} — {{quote.libelle}}",               subjectEn: "Your quotation N° {{quote.id}} — {{quote.libelle}}",                 body: FR_TRANSMISSION,       bodyEn: EN_TRANSMISSION,       isActive: true },
 ];
 
 async function main() {
@@ -195,7 +234,7 @@ async function main() {
   // Templates
   for (const t of templates) {
     const existing = await prisma.emailTemplate.findFirst({
-      where: { transportType: t.transportType, reminderNumber: t.reminderNumber },
+      where: { transportType: t.transportType, reminderNumber: t.reminderNumber, category: t.category },
     });
     if (existing) {
       await prisma.emailTemplate.update({ where: { id: existing.id }, data: t });

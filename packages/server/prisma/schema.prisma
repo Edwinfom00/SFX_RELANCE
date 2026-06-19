@@ -117,6 +117,7 @@ model EmailTemplate {
   name           String
   transportType  String   @map("transport_type")
   reminderNumber Int      @map("reminder_number")
+  category       String   @default("REMINDER") @map("category")
   subject        String
   subjectEn      String   @default("") @map("subject_en")
   body           String   @db.Text
@@ -127,8 +128,39 @@ model EmailTemplate {
 
   emailLogs EmailLog[]
 
-  @@unique([transportType, reminderNumber], name: "email_templates_transport_reminder_unique")
+  @@unique([transportType, reminderNumber, category], name: "email_templates_transport_reminder_category_unique")
   @@map("email_templates")
+}
+
+model OutgoingQuotation {
+  id              Int       @id @default(autoincrement())
+  noPiece         String    @unique @map("no_piece")
+  noProvisoire    String?   @map("no_provisoire")
+  clientCode      String    @map("client_code")
+  clientName      String    @default("") @map("client_name")
+  clientEmail     String    @default("") @map("client_email")
+  clientLanguage  String    @default("FR") @map("client_language")
+  libelle         String    @default("") @map("libelle")
+  transportType   String    @map("transport_type")
+  typeActivite    String    @default("") @map("type_activite")
+  agenceCode      String    @default("") @map("agence_code")
+  agence          String    @default("") @map("agence")
+  dossierRef      String    @default("") @map("dossier_ref")
+  division        String    @default("") @map("division")
+  devise          String    @default("") @map("devise")
+  montant         Float?    @map("montant")
+  dateTransaction DateTime? @map("date_transaction")
+  dateExpiration  DateTime? @map("date_expiration")
+  responsable     String    @default("") @map("responsable")
+  observations    String    @default("") @db.Text @map("observations")
+  paysCode        String    @default("CMR") @map("pays_code")
+  status          String    @default("PENDING") @map("status")
+  sentAt          DateTime? @map("sent_at")
+  errorMessage    String?   @db.Text @map("error_message")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("outgoing_quotations")
 }
 
 

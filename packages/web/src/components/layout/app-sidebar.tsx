@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Zap,
   Users,
+  Send,
 } from "lucide-react";
 
 interface NavItem {
@@ -23,11 +24,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Tableau de bord", href: "/dashboard",  icon: LayoutDashboard },
-  { label: "Cotations",       href: "/quotations",  icon: List },
-  { label: "Clients",         href: "/clients",     icon: Users },
-  { label: "Templates email", href: "/templates",   icon: Mail,       permission: "templates:manage" },
-  { label: "Audit / Logs",    href: "/logs",        icon: RefreshCw },
+  { label: "Tableau de bord",       href: "/dashboard",            icon: LayoutDashboard },
+  { label: "Envoi cotations",        href: "/outgoing-quotations",  icon: Send },
+  { label: "Cotations (relances)",   href: "/quotations",           icon: List },
+  { label: "Clients",                href: "/clients",              icon: Users },
+  { label: "Templates email",        href: "/templates",            icon: Mail,     permission: "templates:manage" },
+  { label: "Audit / Logs",           href: "/logs",                 icon: RefreshCw },
 ];
 
 const systemItems: NavItem[] = [

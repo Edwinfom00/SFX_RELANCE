@@ -1,6 +1,7 @@
 import express from "express";
-import { syncQuotations, syncClients } from "../services/brainopx.service";
+import { syncQuotations, syncClients, syncOutgoingQuotations } from "../services/brainopx.service";
 import { processReminders } from "../services/reminder.service";
+import { transmitOutgoingQuotation } from "../services/transmission.service";
 
 export interface WorkerState {
   id:                 string;
@@ -15,11 +16,12 @@ export interface WorkerState {
 
 /** Registre partagé de tous les workers — clé = workerId */
 export const workerRegistry = new Map<string, WorkerState>([
-  ["sync",        { id: "sync",        label: "Sync BrainOpx", paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
-  ["client-sync", { id: "client-sync", label: "Sync Clients",  paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
-  ["r1",          { id: "r1",          label: "Relance #1",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
-  ["r2",          { id: "r2",          label: "Relance #2",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
-  ["r3",          { id: "r3",          label: "Relance #3",    paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["sync",          { id: "sync",          label: "Sync BrainOpx",        paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["client-sync",   { id: "client-sync",   label: "Sync Clients",          paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["outgoing-sync", { id: "outgoing-sync", label: "Sync Cotations Envoi",  paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["r1",            { id: "r1",            label: "Relance #1",            paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["r2",            { id: "r2",            label: "Relance #2",            paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
+  ["r3",            { id: "r3",            label: "Relance #3",            paused: false, lastTickAt: null, lastTickDurationMs: null, tickCount: 0, startedAt: new Date(), resume: null }],
 ]);
 
 function stateSnapshot(s: WorkerState) {
@@ -41,6 +43,8 @@ export async function runTickFor(workerId: string): Promise<void> {
     await syncQuotations();
   } else if (workerId === "client-sync") {
     await syncClients();
+  } else if (workerId === "outgoing-sync") {
+    await syncOutgoingQuotations();
   } else if (workerId === "r1") {
     await processReminders(1);
   } else if (workerId === "r2") {
@@ -135,6 +139,22 @@ export function startApiServer(): void {
     });
     console.log("[API] All workers resumed");
     res.json({ success: true });
+  });
+
+  /** POST /outgoing-quotations/:id/transmit — déclenche la transmission d'une cotation */
+  app.post("/outgoing-quotations/:id/transmit", async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+    try {
+      const result = await transmitOutgoingQuotation(id);
+      if (result.success) {
+        res.json({ success: true });
+      } else {
+        res.status(422).json({ success: false, error: result.error, errorType: result.errorType });
+      }
+    } catch (err) {
+      res.status(500).json({ success: false, error: err instanceof Error ? err.message : String(err) });
+    }
   });
 
   app.listen(port, () => {

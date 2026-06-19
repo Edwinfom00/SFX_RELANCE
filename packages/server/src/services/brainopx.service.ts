@@ -225,6 +225,141 @@ export async function syncQuotations(): Promise<void> {
   console.log(`[BrainOpx] Sync terminée — ${created} créée(s), ${toComplete.length} complétée(s), ${skipped} ignorée(s)`);
 }
 
+interface OutgoingQuotationRow {
+  no_piece:        string;
+  no_provisoire:   string | null;
+  client_code:     string;
+  client_name:     string;
+  client_email:    string;
+  client_language: string;
+  libelle:         string;
+  transport_type:  string;  // ROUTE | MARITIME | AERIEN | MSL | XXX
+  type_activite:   string;
+  agence_code:     string;
+  agence:          string;
+  dossier_ref:     string;
+  division:        string;
+  devise:          string;
+  montant:         number | null;
+  date_transaction: Date | null;
+  date_expiration:  Date | null;
+  responsable:     string;
+  observations:    string;
+}
+
+function mapTypeActiviteToTransport(typeActivite: string): "AIR" | "SEA" | "ROAD" {
+  switch (typeActivite?.toUpperCase()) {
+    case "AERIEN": return "AIR";
+    case "MARITIME": return "SEA";
+    case "ROUTE": return "ROAD";
+    default: return "ROAD";
+  }
+}
+
+export async function syncOutgoingQuotations(): Promise<void> {
+  console.log("[OutgoingSync] Syncing outgoing quotations from BrainOPX...");
+
+  const db = process.env.BRAINOPX_DATABASE ?? "BopxFMT";
+
+  let rows: OutgoingQuotationRow[] = [];
+  try {
+    rows = await prisma.$queryRawUnsafe<OutgoingQuotationRow[]>(`
+      SELECT
+        [No Piece]         AS no_piece,
+        [No Provisoire]    AS no_provisoire,
+        [Code Client]      AS client_code,
+        [Client]           AS client_name,
+        [Email Client]     AS client_email,
+        [Langue Client]    AS client_language,
+        [Libelle]          AS libelle,
+        [Type Activite]    AS type_activite,
+        [Code Agence]      AS agence_code,
+        [Agence]           AS agence,
+        [Sous-Dossier]     AS dossier_ref,
+        [Division]         AS division,
+        [Devise]           AS devise,
+        [Montant]          AS montant,
+        [Date Transaction] AS date_transaction,
+        [Date Expiration]  AS date_expiration,
+        [Responsable]      AS responsable,
+        [Observations]     AS observations
+      FROM [${db}].[dbo].[VCotationsFacturesAEnvoyerBrainOPX]
+    `);
+  } catch (err) {
+    console.error("[OutgoingSync] Error fetching from BrainOPX:", err);
+    return;
+  }
+
+  console.log(`[OutgoingSync] ${rows.length} cotation(s) à transmettre trouvée(s).`);
+
+  const remoteNoPieces = new Set(rows.map((r) => r.no_piece));
+
+  // Les PENDING locaux absents de la vue (cas rare : annulées côté BrainOPX)
+  const localPending = await prisma.outgoingQuotation.findMany({
+    where: { status: "PENDING" },
+    select: { id: true, noPiece: true },
+  });
+  const toRemove = localPending.filter((q) => !remoteNoPieces.has(q.noPiece));
+  if (toRemove.length > 0) {
+    await prisma.outgoingQuotation.deleteMany({
+      where: { id: { in: toRemove.map((q) => q.id) } },
+    });
+    console.log(`[OutgoingSync] ${toRemove.length} cotation(s) PENDING retirée(s) (absentes de la vue).`);
+  }
+
+  const existingMap = new Map(
+    (await prisma.outgoingQuotation.findMany({ select: { noPiece: true, status: true } }))
+      .map((q) => [q.noPiece, q])
+  );
+
+  let created = 0;
+  for (const row of rows) {
+    const existing = existingMap.get(row.no_piece);
+    if (existing) continue; // déjà en local (PENDING ou SENT)
+
+    const transportType = mapTypeActiviteToTransport(row.type_activite ?? "");
+
+    // Chercher l'email local du client si disponible
+    let clientEmail = row.client_email ?? "";
+    try {
+      const localClient = await prisma.client.findUnique({
+        where: { code: row.client_code },
+        select: { emails: true },
+      });
+      if (localClient?.emails) clientEmail = localClient.emails;
+    } catch {}
+
+    await prisma.outgoingQuotation.create({
+      data: {
+        noPiece:         row.no_piece,
+        noProvisoire:    row.no_provisoire ?? null,
+        clientCode:      row.client_code ?? "",
+        clientName:      row.client_name ?? "",
+        clientEmail,
+        clientLanguage:  row.client_language ?? "FR",
+        libelle:         row.libelle ?? "",
+        transportType,
+        typeActivite:    row.type_activite ?? "",
+        agenceCode:      row.agence_code ?? "",
+        agence:          row.agence ?? "",
+        dossierRef:      row.dossier_ref ?? "",
+        division:        row.division ?? "",
+        devise:          row.devise ?? "",
+        montant:         row.montant ?? null,
+        dateTransaction: row.date_transaction ? new Date(row.date_transaction) : null,
+        dateExpiration:  row.date_expiration  ? new Date(row.date_expiration)  : null,
+        responsable:     row.responsable ?? "",
+        observations:    row.observations ?? "",
+        paysCode:        row.agence_code?.startsWith("LOM") ? "TGO" : "CMR",
+        status:          "PENDING",
+      },
+    });
+    created++;
+  }
+
+  console.log(`[OutgoingSync] Sync terminée — ${created} créée(s), ${toRemove.length} retirée(s).`);
+}
+
 export async function syncClients(): Promise<void> {
   console.log("[ClientSync] Syncing clients...");
 

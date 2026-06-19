@@ -37,15 +37,18 @@ export function TemplateForm({ template, onSuccess }: TemplateFormProps) {
   } = useForm<TemplateInput>({
     defaultValues: template
       ? {
-          name: template.name,
-          transportType: template.transportType,
+          name:           template.name,
+          transportType:  template.transportType,
+          category:       (template as any).category ?? "REMINDER",
           reminderNumber: template.reminderNumber,
-          subject: template.subject,
-          body: template.body,
-          isActive: template.isActive,
+          subject:        template.subject,
+          body:           template.body,
+          isActive:       template.isActive,
         }
-      : { isActive: true },
+      : { isActive: true, category: "REMINDER" },
   });
+
+  const category = watch("category") ?? "REMINDER";
 
   const isActive = watch("isActive");
 
@@ -77,7 +80,26 @@ export function TemplateForm({ template, onSuccess }: TemplateFormProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-1.5">
+        <Label>Catégorie</Label>
+        <Select
+          value={category}
+          onValueChange={(v) => {
+            setValue("category", v as "REMINDER" | "TRANSMISSION");
+            if (v === "TRANSMISSION") setValue("reminderNumber", 0);
+          }}
+        >
+          <SelectTrigger className="rounded-md h-9 w-full">
+            <SelectValue placeholder="Sélectionner" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="REMINDER">Relance client</SelectItem>
+            <SelectItem value="TRANSMISSION">Transmission initiale (envoi cotation)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className={`grid gap-3 ${category === "REMINDER" ? "grid-cols-2" : "grid-cols-1"}`}>
         <div className="space-y-1.5">
           <Label>Type de transport</Label>
           <Select
@@ -95,22 +117,24 @@ export function TemplateForm({ template, onSuccess }: TemplateFormProps) {
           </Select>
         </div>
 
-        <div className="space-y-1.5">
-          <Label>Numéro de relance</Label>
-          <Select
-            value={String(watch("reminderNumber") ?? "")}
-            onValueChange={(v) => setValue("reminderNumber", Number(v) as 1 | 2 | 3)}
-          >
-            <SelectTrigger className="rounded-md h-9 w-full">
-              <SelectValue placeholder="Sélectionner" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">Relance 1</SelectItem>
-              <SelectItem value="2">Relance 2</SelectItem>
-              <SelectItem value="3">Relance 3</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {category === "REMINDER" && (
+          <div className="space-y-1.5">
+            <Label>Numéro de relance</Label>
+            <Select
+              value={String(watch("reminderNumber") ?? "")}
+              onValueChange={(v) => setValue("reminderNumber", Number(v) as 1 | 2 | 3)}
+            >
+              <SelectTrigger className="rounded-md h-9 w-full">
+                <SelectValue placeholder="Sélectionner" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Relance 1</SelectItem>
+                <SelectItem value="2">Relance 2</SelectItem>
+                <SelectItem value="3">Relance 3</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       <div className="space-y-1.5">
