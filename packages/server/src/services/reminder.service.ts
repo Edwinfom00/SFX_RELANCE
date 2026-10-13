@@ -221,23 +221,12 @@ async function sendReminder(
   let success  = false;
   let errorMsg: string | undefined;
   const attachments: Array<{ filename: string; path: string }> = [];
-
-  const pdfSearchResult = findQuotationPdf(
-    quotation.quotationId,
-    quotation.paysCode,
-    quotation.agenceCode
-  );
-
-  if (pdfSearchResult.error) {
-    console.warn(`${tag} PDF manquant pour ${quotation.quotationId} (${pdfSearchResult.errorDetails}) — Envoi de la relance sans pièce jointe.`);
-    errorMsg = `PDF absent: ${pdfSearchResult.errorDetails}`;
-  } else if (pdfSearchResult.filePath) {
-    attachments.push({
-      filename: require("path").basename(pdfSearchResult.filePath),
-      path: pdfSearchResult.filePath,
-    });
+  const pdfResult = findQuotationPdf(quotation.quotationId, quotation.paysCode, quotation.agenceCode);
+  if (pdfResult.filePath) {
+    attachments.push({ filename: require("path").basename(pdfResult.filePath), path: pdfResult.filePath });
+  } else {
+    console.warn(`${tag} PDF indisponible pour ${quotation.quotationId} — relance sans pièce jointe.`);
   }
-
   const { to, cc } = parseRecipientEmails(recipientEmail);
 
   for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {

@@ -90,7 +90,7 @@ export function AppSidebar({
           <Zap className="h-3.5 w-3.5" strokeWidth={2.5} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-semibold text-[#0a2540] tracking-[-0.01em]">SFX Relance</div>
+          <div className="text-[13px] font-semibold text-[#0a2540] tracking-[-0.01em]">SFX eReminder</div>
           <div className="text-[11px] text-[#8898aa] mt-px">Production · v1.0.0</div>
         </div>
         <ChevronDown className="h-3.5 w-3.5 text-[#8898aa]" />

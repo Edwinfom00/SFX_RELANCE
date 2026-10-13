@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { decrypt } from "@/lib/crypto";
 import nodemailer from "nodemailer";
-import { parseRecipientEmails } from "@/lib/email";
+import { parseRecipientEmails, splitEmails, isValidEmail } from "@/lib/email";
 import { findQuotationPdf } from "@/lib/pdf";
 
 const REMINDER_SCHEDULE: Record<string, Array<{ reminderNumber: number; delayHours: number }>> = {
@@ -34,13 +34,26 @@ function textToHtml(text: string): string {
 
 export async function sendReminderNowAction(
   quotationId: number,
-  ignoreMissingPdf: boolean = false
-): Promise<{ success: boolean; error?: string; code?: string }> {
+  recipients?: { to: string; cc?: string }
+): Promise<{ success: boolean; error?: string }> {
   try {
     const quotation = await prisma.quotation.findUnique({ where: { id: quotationId } });
     if (!quotation) return { success: false, error: "Cotation introuvable." };
     if (quotation.status !== "ACTIVE") return { success: false, error: "La cotation n'est plus active." };
     if (quotation.currentReminder >= 3) return { success: false, error: "Toutes les relances ont déjà été envoyées." };
+
+    // Destinataires : ceux saisis dans le dialogue, sinon ceux de la cotation en BD
+    let { to, cc } = parseRecipientEmails(quotation.clientEmail);
+    if (recipients) {
+      const toList = splitEmails(recipients.to);
+      const ccList = splitEmails(recipients.cc ?? "");
+      if (toList.length === 0) return { success: false, error: "Adresse du destinataire requise." };
+      const invalid = [...toList, ...ccList].find((e) => !isValidEmail(e));
+      if (invalid) return { success: false, error: `Adresse email invalide : ${invalid}` };
+      to = toList.join(", ");
+      cc = ccList.join(", ");
+    }
+    if (!to) return { success: false, error: "Aucune adresse email pour cette cotation." };
 
     const nextReminderNumber = (quotation.currentReminder + 1) as 1 | 2 | 3;
 
@@ -79,28 +92,10 @@ export async function sendReminderNowAction(
     const subject = resolveVars(subjectTpl, quotation.quotationId, libelle, quotation.clientCode);
     const html    = textToHtml(resolveVars(bodyTpl,    quotation.quotationId, libelle, quotation.clientCode));
 
-    // Recherche du PDF
-    const pdfSearchResult = findQuotationPdf(
-      quotation.quotationId,
-      quotation.paysCode,
-      quotation.agenceCode
-    );
-
     const attachments: Array<{ filename: string; path: string }> = [];
-
-    if (pdfSearchResult.error) {
-      if (!ignoreMissingPdf || pdfSearchResult.error !== "NO_PDF_FOUND") {
-        return {
-          success: false,
-          error: pdfSearchResult.errorDetails,
-          code: pdfSearchResult.error
-        };
-      }
-    } else if (pdfSearchResult.filePath) {
-      attachments.push({
-        filename: require("path").basename(pdfSearchResult.filePath),
-        path: pdfSearchResult.filePath,
-      });
+    const pdfResult = findQuotationPdf(quotation.quotationId, quotation.paysCode, quotation.agenceCode);
+    if (pdfResult.filePath) {
+      attachments.push({ filename: require("path").basename(pdfResult.filePath), path: pdfResult.filePath });
     }
 
     // Log PENDING
@@ -109,7 +104,7 @@ export async function sendReminderNowAction(
         quotationId:    quotation.id,
         reminderNumber: nextReminderNumber,
         templateId:     template.id,
-        recipientEmail: quotation.clientEmail,
+        recipientEmail: recipients ? [to, cc].filter(Boolean).join(", ") : quotation.clientEmail,
         status:         "PENDING",
       },
     });
@@ -123,8 +118,6 @@ export async function sendReminderNowAction(
       transportOpts.auth = { user, pass };
     }
     const transporter = nodemailer.createTransport(transportOpts);
-
-    const { to, cc } = parseRecipientEmails(quotation.clientEmail);
 
     try {
       await transporter.sendMail({ from, to, cc: cc || undefined, subject, html, attachments });

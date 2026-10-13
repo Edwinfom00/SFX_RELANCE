@@ -1,3 +1,15 @@
+/** Découpe une chaîne d'adresses séparées par des virgules ou points-virgules. */
+export function splitEmails(emailField: string): string[] {
+  return (emailField ?? "")
+    .split(/[,;]/)
+    .map((e) => e.trim())
+    .filter((e) => e.length > 0);
+}
+
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(email);
+}
+
 /**
  * Découpe une chaîne d'adresses email séparées par des virgules.
  * Retourne le premier email dans `to` (destinataire principal)

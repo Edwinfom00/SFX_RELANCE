@@ -4,7 +4,10 @@ import { useState, useTransition } from "react";
 import { Send, X, CheckCircle, AlertCircle, Loader } from "lucide-react";
 import { SfxButton, TransportBadge, Pill } from "@/components/sfx-ui";
 import { sendReminderNowAction } from "../actions/send-now";
-import { parseRecipientEmails } from "@/lib/email";
+import { parseRecipientEmails, splitEmails, isValidEmail } from "@/lib/email";
+
+const recipientInputClass =
+  "w-full h-8.5 px-3 bg-white border border-[#d8dee6] rounded-[7px] text-[13px] text-[#0a2540] font-mono outline-none focus:border-[#0057ff] focus:shadow-[0_0_0_3px_#f2f6ff] transition-all sfx-shadow-sm placeholder:text-[#8898aa]";
 
 interface SendNowDialogProps {
   quotationId: number;
@@ -22,34 +25,44 @@ export function SendNowDialog({
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState("");
-  const [pdfError, setPdfError] = useState<string | null>(null);
-  const [confirmMissingPdf, setConfirmMissingPdf] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Adresses de la cotation en BD, proposées par défaut et modifiables pour cet envoi
+  const defaults = parseRecipientEmails(clientEmail);
+  const [to, setTo] = useState(defaults.to);
+  const [cc, setCc] = useState(defaults.cc);
+
+  const toList = splitEmails(to);
+  const ccList = splitEmails(cc);
+  const invalidEmail = [...toList, ...ccList].find((e) => !isValidEmail(e));
+  const recipientError =
+    toList.length === 0 ? "Adresse du destinataire requise."
+    : invalidEmail      ? `Adresse email invalide : ${invalidEmail}`
+    : "";
+  const isModified = to !== defaults.to || cc !== defaults.cc;
+
+  function resetRecipients() {
+    setTo(defaults.to);
+    setCc(defaults.cc);
+  }
 
   function handleOpen() {
     setState("idle");
     setError("");
-    setPdfError(null);
-    setConfirmMissingPdf(false);
+    resetRecipients();
     setOpen(true);
   }
 
   function handleConfirm() {
+    if (recipientError) return;
     setState("loading");
     startTransition(async () => {
-      const result = await sendReminderNowAction(quotationId, confirmMissingPdf);
+      const result = await sendReminderNowAction(quotationId, { to, cc });
       if (result.success) {
         setState("success");
-        setPdfError(null);
       } else {
-        if (result.code === "NO_PDF_FOUND") {
-          setState("idle");
-          setPdfError(result.error ?? "Aucun PDF trouvé.");
-        } else {
-          setState("error");
-          setError(result.error ?? "Erreur inconnue");
-          setPdfError(null);
-        }
+        setState("error");
+        setError(result.error ?? "Erreur inconnue");
       }
     });
   }
@@ -97,58 +110,61 @@ export function SendNowDialog({
                       <TransportBadge type={transportType} />
                       <Pill tone="blue">{reminderLabel[nextReminderNumber] ?? `Relance #${nextReminderNumber}`}</Pill>
                     </div>
-                    {(() => {
-                      const { to, cc } = parseRecipientEmails(clientEmail);
-                      return (
-                        <div className="grid gap-1" style={{ gridTemplateColumns: "auto 1fr" }}>
-                          <span className="text-[11.5px] text-[#8898aa] font-semibold">Destinataire</span>
-                          <span className="text-[12px] text-[#0a2540] font-mono">{to}</span>
-                          {cc && (
-                            <>
-                              <span className="text-[11.5px] text-[#8898aa] font-semibold">Cc</span>
-                              <span className="text-[12px] text-[#0a2540] font-mono">{cc}</span>
-                            </>
-                          )}
-                          {templateName && (
-                            <>
-                              <span className="text-[11.5px] text-[#8898aa] font-semibold">Template</span>
-                              <span className="text-[12px] text-[#425466]">{templateName}</span>
-                            </>
-                          )}
-                        </div>
-                      );
-                    })()}
+                    {templateName && (
+                      <div className="grid gap-1" style={{ gridTemplateColumns: "auto 1fr" }}>
+                        <span className="text-[11.5px] text-[#8898aa] font-semibold">Template</span>
+                        <span className="text-[12px] text-[#425466]">{templateName}</span>
+                      </div>
+                    )}
                   </div>
 
-                  {pdfError ? (
-                    <div className="flex flex-col gap-3 px-3.5 py-3 bg-[#ffe1e6] border border-[#cd3d64]/20 rounded-lg">
-                      <div className="flex items-start gap-2.5">
-                        <span className="text-[#cd3d64] text-[14px] shrink-0 mt-px">⚠️</span>
-                        <div className="text-[12.5px] text-[#cd3d64] leading-normal font-medium">
-                          {pdfError}
-                        </div>
-                      </div>
-                      <label className="flex items-center gap-2.5 mt-1 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={confirmMissingPdf}
-                          onChange={(e) => setConfirmMissingPdf(e.target.checked)}
-                          className="rounded border-[#cd3d64]/40 text-[#cd3d64] focus:ring-[#cd3d64] h-4 w-4 accent-[#cd3d64]"
-                        />
-                        <span className="text-[12px] text-[#cd3d64] font-semibold">
-                          Confirmer l'envoi sans pièce jointe PDF
-                        </span>
-                      </label>
+                  {/* Destinataires */}
+                  <div className="flex flex-col gap-2.5">
+                    <label className="flex flex-col gap-1">
+                      <span className="text-[11.5px] text-[#8898aa] font-semibold">Destinataire</span>
+                      <input
+                        type="text"
+                        value={to}
+                        onChange={(e) => setTo(e.target.value)}
+                        placeholder="client@exemple.com"
+                        className={recipientInputClass}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-[11.5px] text-[#8898aa] font-semibold">Cc</span>
+                      <input
+                        type="text"
+                        value={cc}
+                        onChange={(e) => setCc(e.target.value)}
+                        placeholder="Optionnel — plusieurs adresses séparées par des virgules"
+                        className={recipientInputClass}
+                      />
+                    </label>
+                    <div className="flex items-center justify-between gap-3 min-h-4">
+                      <span className={`text-[11.5px] ${recipientError ? "text-[#cd3d64]" : "text-[#8898aa]"}`}>
+                        {recipientError || (isModified
+                          ? "Adresses modifiées pour cet envoi uniquement."
+                          : "Adresses enregistrées pour cette cotation.")}
+                      </span>
+                      {isModified && (
+                        <button
+                          type="button"
+                          onClick={resetRecipients}
+                          className="text-[11.5px] font-semibold text-[#0057ff] hover:underline shrink-0"
+                        >
+                          Réinitialiser
+                        </button>
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex items-start gap-2.5 px-3 py-2.5 bg-[#fff3d6] border border-[#c28b00]/20 rounded-lg">
-                      <span className="text-[#c28b00] text-[13px] shrink-0 mt-px">⚠️</span>
-                      <div className="text-[12px] text-[#425466] leading-normal">
-                        L'email sera envoyé <b className="text-[#0a2540]">immédiatement</b>.
-                        Le compteur de relances sera mis à jour et la prochaine relance replanifiée.
-                      </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5 px-3 py-2.5 bg-[#fff3d6] border border-[#c28b00]/20 rounded-lg">
+                    <span className="text-[#c28b00] text-[13px] shrink-0 mt-px">⚠️</span>
+                    <div className="text-[12px] text-[#425466] leading-normal">
+                      L'email sera envoyé <b className="text-[#0a2540]">immédiatement</b>.
+                      Le compteur de relances sera mis à jour et la prochaine relance replanifiée.
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
 
@@ -159,22 +175,19 @@ export function SendNowDialog({
                 </div>
               )}
 
-              {state === "success" && (() => {
-                const { to, cc } = parseRecipientEmails(clientEmail);
-                return (
-                  <div className="flex items-start gap-3 py-2">
-                    <CheckCircle className="h-5 w-5 text-[#0e9f6e] shrink-0 mt-0.5" />
-                    <div>
-                      <div className="text-[13px] font-semibold text-[#0a2540]">
-                        Relance #{nextReminderNumber} envoyée avec succès
-                      </div>
-                      <div className="text-[12px] text-[#697386] mt-0.5">
-                        Email envoyé à <b>{to}</b>{cc ? ` (avec copie en Cc à ${cc})` : ""}. La page va se rafraîchir.
-                      </div>
+              {state === "success" && (
+                <div className="flex items-start gap-3 py-2">
+                  <CheckCircle className="h-5 w-5 text-[#0e9f6e] shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#0a2540]">
+                      Relance #{nextReminderNumber} envoyée avec succès
+                    </div>
+                    <div className="text-[12px] text-[#697386] mt-0.5">
+                      Email envoyé à <b>{toList.join(", ")}</b>{ccList.length > 0 ? ` (avec copie en Cc à ${ccList.join(", ")})` : ""}. La page va se rafraîchir.
                     </div>
                   </div>
-                );
-              })()}
+                </div>
+              )}
 
               {state === "error" && (
                 <div className="flex items-start gap-3 py-2">
@@ -202,7 +215,7 @@ export function SendNowDialog({
                   size="sm" 
                   icon={Send} 
                   onClick={handleConfirm} 
-                  disabled={isPending || (pdfError !== null && !confirmMissingPdf)}
+                  disabled={isPending || !!recipientError}
                 >
                   Confirmer l'envoi
                 </SfxButton>
